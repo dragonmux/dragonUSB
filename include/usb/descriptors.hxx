@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <string_view>
-#include "types.hxx"
+#include "usb/types.hxx"
 
 namespace usb::descriptors
 {

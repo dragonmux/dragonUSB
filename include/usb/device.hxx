@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <cstring>
 #include <type_traits>
-#include "types.hxx"
-#include "descriptors.hxx"
+#include "usb/types.hxx"
+#include "usb/descriptors.hxx"
 
 namespace usb::types
 {

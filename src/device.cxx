@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#include "platform.hxx"
-#include "core.hxx"
-#include "device.hxx"
+#include "usb/platform.hxx"
+#include "usb/core.hxx"
+#include "usb/device.hxx"
 #include <substrate/indexed_iterator>
 
 using namespace usb::types;

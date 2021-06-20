@@ -2,7 +2,7 @@
 #ifndef USB_CORE___HXX
 #define USB_CORE___HXX
 
-#include "types.hxx"
+#include "usb/types.hxx"
 
 namespace usb::core
 {
