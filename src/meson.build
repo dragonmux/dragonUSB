@@ -22,10 +22,13 @@ else
 	error('Must define the target device to build the stack for')
 endif
 
+subdir(get_option('chip'))
+
 dragonUSBSrc = [
+	platformSrcs, 'device.cxx'
 ]
 
-dragonUSB = library(
+dragonUSB = static_library(
 	'dragonUSB',
 	dragonUSBSrc,
 	include_directories: [include_directories('../include')],
