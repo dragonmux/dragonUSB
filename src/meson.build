@@ -17,7 +17,7 @@ if get_option('chip').startswith('tm4c')
 		required: true,
 		version: '>=0.0.1',
 		fallback: ['dragonTI', 'dragonTI_dep']
-	)
+	).partial_dependency(compile_args: true, includes: true)
 else
 	error('Must define the target device to build the stack for')
 endif
