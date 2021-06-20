@@ -86,8 +86,8 @@ namespace usb::device
 
 			for (const auto &[i, handler] : substrate::indexedIterator_t{handlers[activeConfig]})
 			{
-				if (handler->init)
-					handler->init(i + 1); // i + 1 is the endpoint the handler is registered on
+				if (handler.init)
+					handler.init(i + 1); // i + 1 is the endpoint the handler is registered on
 			}
 		}
 		else
