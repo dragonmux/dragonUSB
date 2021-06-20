@@ -21,6 +21,12 @@ namespace usb::types
 	constexpr static const uint8_t endpointDescriptorCount{2};
 	constexpr static const uint8_t stringCount{4};
 
+	struct handler_t final
+	{
+		void (*init)(uint8_t endpoint);
+		void (*handlePacket)(uint8_t endpoint);
+	};
+
 	enum class ctrlState_t
 	{
 		idle,

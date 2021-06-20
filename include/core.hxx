@@ -10,15 +10,9 @@ namespace usb::core
 	extern usb::types::usbEP_t usbPacket;
 	extern usb::types::ctrlState_t usbCtrlState;
 
-	struct handler_t final
-	{
-		void (*init)(uint8_t endpoint);
-		void (*handlePacket)(uint8_t endpoint);
-	};
-
 	extern std::array<usb::types::usbEPStatus_t<const void>, usb::types::endpointCount> epStatusControllerIn;
 	extern std::array<usb::types::usbEPStatus_t<void>, usb::types::endpointCount> epStatusControllerOut;
-	extern std::array<std::array<handler_t, usb::types::endpointCount - 1>, usb::types::configsCount> handlers;
+	extern std::array<std::array<usb::types::handler_t, usb::types::endpointCount - 1>, usb::types::configsCount> handlers;
 
 	extern const uint8_t *sendData(const uint8_t ep, const uint8_t *const buffer, const uint8_t length) noexcept;
 	extern uint8_t *recvData(const uint8_t ep, uint8_t *const buffer, const uint8_t length) noexcept;
@@ -41,7 +35,7 @@ namespace usb::core
 	extern bool writeEPBusy(uint8_t endpoint) noexcept;
 	extern void clearWaitingRXIRQs() noexcept;
 
-	extern void registerHandler(uint8_t endpoint, uint8_t config, handler_t handler) noexcept;
+	extern void registerHandler(uint8_t endpoint, uint8_t config, usb::types::handler_t handler) noexcept;
 	extern void unregisterHandler(uint8_t endpoint, uint8_t config) noexcept;
 } // namespace usb::core
 
