@@ -73,7 +73,10 @@ add_project_arguments(
 subdir('src')
 
 dragonUSB_dep = declare_dependency(
-
+	dependencies: [platform, substrate],
+	include_directories: include_directories('include'),
+	link_with: dragonUSB,
+	version: meson.project_version()
 )
 
 runClangTidy = find_program('runClangTidy.py')
