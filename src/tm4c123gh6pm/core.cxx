@@ -245,7 +245,7 @@ namespace usb::core
 	* @returns true when the data to be transmitted is entirely sent,
 	* false if there is more left to send.
 	*/
-	[[gnu::noinline]] bool writeEP(const uint8_t endpoint) noexcept
+	bool writeEP(const uint8_t endpoint) noexcept
 	{
 		if (!endpoint)
 			return false;
