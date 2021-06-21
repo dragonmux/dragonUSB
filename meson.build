@@ -42,7 +42,7 @@ extended_warnings = [
 	'-Wstrict-overflow=3',
 	'-Wstring-compare',
 	'-Wstringop-overflow',
-	'-Warith-conversion',
+#	'-Warith-conversion',
 	'-Wvla-parameter',
 	'-Wduplicated-branches',
 	'-Wshadow=local',
