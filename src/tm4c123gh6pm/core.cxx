@@ -272,10 +272,10 @@ namespace usb::core
 			while (sendAmount)
 			{
 				const auto &part{epStatus.partsData->part(epStatus.partNumber)};
-				auto *const begin{static_cast<const uint8_t *>(part.descriptor)};
+				const auto *const begin{static_cast<const uint8_t *>(part.descriptor)};
 				const auto partAmount{[&]() -> uint8_t
 				{
-					auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
+					const auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
 					const auto amount{part.length - uint16_t(buffer - begin)};
 					if (amount > sendAmount)
 						return sendAmount;
@@ -313,7 +313,7 @@ namespace usb::core
 					leftoverCount = remainder;
 				}
 				// Get the buffer back to check if we exhausted it
-				auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
+				const auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
 				if (buffer - begin == part.length &&
 						epStatus.partNumber + 1 < epStatus.partsData->count())
 					// We exhausted the chunk's buffer, so grab the next chunk
