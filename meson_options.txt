@@ -1,2 +1,3 @@
+# SPDX-License-Identifier: BSD-3-Clause
 option('chip', type: 'combo', description: 'Which chip you wish to target',
 	choices: ['unknown', 'tm4c123gh6pm', 'atxmega256a3u'])
