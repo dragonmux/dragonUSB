@@ -199,24 +199,24 @@ namespace usb::core
 	const uint8_t *sendData(const uint8_t ep, const uint8_t *const buffer, const uint8_t length) noexcept
 	{
 		// Copy the data to tranmit from the user buffer
-		for (uint8_t i{}; i < (length & 0xFCU); i += 4)
+		for (uint8_t i{}; i < (length & 0xFCU); i += 4U)
 			writeFIFO_t<uint32_t>{}(usbCtrl.epFIFO[ep], buffer + i);
 		if (length & 0x02U)
-			writeFIFO_t<uint16_t>{}(usbCtrl.epFIFO[ep], buffer + (length & 0xFEU) - 2);
+			writeFIFO_t<uint16_t>{}(usbCtrl.epFIFO[ep], buffer + (length & 0xFEU) - 2U);
 		if (length & 0x01U)
-			writeFIFO_t<uint8_t>{}(usbCtrl.epFIFO[ep], buffer + length - 1);
+			writeFIFO_t<uint8_t>{}(usbCtrl.epFIFO[ep], buffer + length - 1U);
 		return buffer + length;
 	}
 
 	uint8_t *recvData(const uint8_t ep, uint8_t *const buffer, const uint8_t length) noexcept
 	{
 		// Copy the received data to the user buffer
-		for (uint8_t i{}; i < (length & 0xFCU); i += 4)
+		for (uint8_t i{}; i < (length & 0xFCU); i += 4U)
 			readFIFO_t<uint32_t>{}(usbCtrl.epFIFO[ep], buffer + i);
 		if (length & 0x02U)
-			readFIFO_t<uint16_t>{}(usbCtrl.epFIFO[ep], buffer + (length & 0xFEU) - 2);
+			readFIFO_t<uint16_t>{}(usbCtrl.epFIFO[ep], buffer + (length & 0xFEU) - 2U);
 		if (length & 0x01U)
-			readFIFO_t<uint8_t>{}(usbCtrl.epFIFO[ep], buffer + length - 1);
+			readFIFO_t<uint8_t>{}(usbCtrl.epFIFO[ep], buffer + length - 1U);
 		return buffer + length;
 	}
 

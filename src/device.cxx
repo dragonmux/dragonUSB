@@ -74,7 +74,7 @@ namespace usb::device
 			usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
 			usbCtrl.txIntEnable |= vals::usb::txItrEnableEP0;
 
-			const auto descriptors{usb::descriptors::usbConfigDescriptors[activeConfig - 1]};
+			const auto descriptors{usb::descriptors::usbConfigDescriptors[activeConfig - 1U]};
 			for (const auto &part : descriptors)
 			{
 				const auto *const descriptor{static_cast<const std::byte *>(part.descriptor)};
@@ -87,7 +87,7 @@ namespace usb::device
 			for (const auto &[i, handler] : substrate::indexedIterator_t{handlers[activeConfig]})
 			{
 				if (handler.init)
-					handler.init(i + 1); // i + 1 is the endpoint the handler is registered on
+					handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
 			}
 		}
 		else
