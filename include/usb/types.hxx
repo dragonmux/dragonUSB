@@ -69,6 +69,7 @@ namespace usb::types
 
 	public:
 		usbEP_t() = default;
+		usbEP_t(const uint8_t num, const endpointDir_t dir) : value(uint8_t(dir) | num) { }
 
 		void endpoint(const uint8_t num) noexcept
 		{

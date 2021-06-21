@@ -84,7 +84,12 @@ namespace usb::device
 					setupEndpoint(*static_cast<const usbEndpointDescriptor_t *>(part.descriptor), startAddress);
 			}
 
-			for (const auto &[i, handler] : substrate::indexedIterator_t{handlers[activeConfig]})
+			for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[activeConfig]})
+			{
+				if (handler.init)
+					handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
+			}
+			for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[activeConfig]})
 			{
 				if (handler.init)
 					handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on

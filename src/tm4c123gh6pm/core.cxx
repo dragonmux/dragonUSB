@@ -26,7 +26,8 @@ namespace usb::core
 	std::array<usbEPStatus_t<const void>, endpointCount> epStatusControllerIn{};
 	std::array<usbEPStatus_t<void>, endpointCount> epStatusControllerOut{};
 
-	std::array<std::array<handler_t, endpointCount - 1>, configsCount> handlers{};
+	std::array<std::array<handler_t, endpointCount - 1>, configsCount> inHandlers{};
+	std::array<std::array<handler_t, endpointCount - 1>, configsCount> outHandlers{};
 
 	/*!
 	* Transmitting packets:
@@ -105,18 +106,28 @@ namespace usb::core
 		usbCtrl.power |= vals::usb::powerSoftConnect;
 	}
 
-	void registerHandler(const uint8_t endpoint, const uint8_t config, const handler_t handler) noexcept
+	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t handler) noexcept
 	{
+		const auto endpoint{ep.endpoint()};
+		const auto direction{ep.dir()};
 		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
 			return;
-		handlers[config][endpoint] = handler;
+		if (direction == endpointDir_t::controllerIn)
+			inHandlers[config][endpoint - 1U] = handler;
+		else
+			outHandlers[config][endpoint - 1U] = handler;
 	}
 
-	void unregisterHandler(const uint8_t endpoint, const uint8_t config) noexcept
+	void unregisterHandler(usbEP_t ep, const uint8_t config) noexcept
 	{
+		const auto endpoint{ep.endpoint()};
+		const auto direction{ep.dir()};
 		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
 			return;
-		handlers[config][endpoint] = {};
+		if (direction == endpointDir_t::controllerIn)
+			inHandlers[config][endpoint - 1U] = {};
+		else
+			outHandlers[config][endpoint - 1U] = {};
 	}
 
 	void reset() noexcept
@@ -402,7 +413,16 @@ namespace usb::core
 					usb::device::handleControlPacket();
 				else
 				{
-					const auto &handler{handlers[usb::device::activeConfig][endpoint - 1]};
+					const auto &handler
+					{
+						[](const uint8_t index)
+						{
+							if (usbPacket.dir() == endpointDir_t::controllerIn)
+								return inHandlers[usb::device::activeConfig][index];
+							else
+								return outHandlers[usb::device::activeConfig][index];
+						}(endpoint - 1U)
+					};
 					if (handler.handlePacket)
 						handler.handlePacket(endpoint);
 				}
