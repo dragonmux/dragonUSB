@@ -130,6 +130,36 @@ namespace usb::core
 			outHandlers[config][endpoint - 1U] = {};
 	}
 
+	void initHandlers() noexcept
+	{
+		for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[usb::device::activeConfig]})
+		{
+			if (handler.init)
+				handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
+		}
+		for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[usb::device::activeConfig]})
+		{
+			if (handler.init)
+				handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
+		}
+	}
+
+	void deinitHandlers() noexcept
+	{
+	}
+
+	usb::types::handler_t handlerFor(usb::types::usbEP_t ep, uint8_t config) noexcept
+	{
+		const auto endpoint{ep.endpoint()};
+		const auto direction{ep.dir()};
+		if (!endpoint || endpoint > endpointCount || !config || config >= configsCount)
+			return {};
+		if (direction == endpointDir_t::controllerIn)
+			return inHandlers[config][endpoint - 1U];
+		else
+			return outHandlers[config][endpoint - 1U];
+	}
+
 	void reset() noexcept
 	{
 		// Set up only EP0.

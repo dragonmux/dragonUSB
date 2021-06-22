@@ -42,6 +42,9 @@ namespace usb::core
 
 	extern void registerHandler(usb::types::usbEP_t ep, uint8_t config, usb::types::handler_t handler) noexcept;
 	extern void unregisterHandler(usb::types::usbEP_t ep, uint8_t config) noexcept;
+	extern void initHandlers() noexcept;
+	extern void deinitHandlers() noexcept;
+	extern usb::types::handler_t handlerFor(usb::types::usbEP_t ep, uint8_t config) noexcept;
 } // namespace usb::core
 
 #endif /*USB_CORE___HXX*/
