@@ -106,7 +106,7 @@ namespace usb::core
 		usbCtrl.power |= vals::usb::powerSoftConnect;
 	}
 
-	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t handler) noexcept
+	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t &handler) noexcept
 	{
 		const auto endpoint{ep.endpoint()};
 		const auto direction{ep.dir()};

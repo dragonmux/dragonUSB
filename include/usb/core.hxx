@@ -40,7 +40,8 @@ namespace usb::core
 	extern bool writeEPBusy(uint8_t endpoint) noexcept;
 	extern void clearWaitingRXIRQs() noexcept;
 
-	extern void registerHandler(usb::types::usbEP_t ep, uint8_t config, usb::types::handler_t handler) noexcept;
+	extern void registerHandler(usb::types::usbEP_t ep, uint8_t config,
+		const usb::types::handler_t &handler) noexcept;
 	extern void unregisterHandler(usb::types::usbEP_t ep, uint8_t config) noexcept;
 	extern void initHandlers() noexcept;
 	extern void deinitHandlers() noexcept;
