@@ -85,7 +85,10 @@ namespace usb::device
 				usbDescriptor_t type{usbDescriptor_t::invalid};
 				memcpy(&type, descriptor + 1, 1);
 				if (type == usbDescriptor_t::endpoint)
-					setupEndpoint(*static_cast<const usbEndpointDescriptor_t *>(part.descriptor), startAddress);
+				{
+					const auto endpoint{*static_cast<const usbEndpointDescriptor_t *>(part.descriptor)};
+					setupEndpoint(endpoint, startAddress);
+				}
 			}
 
 			for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[activeConfig]})
