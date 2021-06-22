@@ -63,7 +63,11 @@ namespace usb::device
 	{
 		usb::core::resetEPs(epReset_t::user);
 
-		activeConfig = packet.value.asAddress().addrL;
+		const auto config{packet.value.asConfiguration()};
+		if (config > usb::types::configsCount)
+			return false;
+		activeConfig = config;
+
 		if (activeConfig == 0)
 			usbState = deviceState_t::addressed;
 		else if (activeConfig <= usb::types::configsCount)
