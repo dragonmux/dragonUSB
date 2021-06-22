@@ -26,8 +26,8 @@ namespace usb::core
 	std::array<usbEPStatus_t<const void>, endpointCount> epStatusControllerIn{};
 	std::array<usbEPStatus_t<void>, endpointCount> epStatusControllerOut{};
 
-	std::array<std::array<handler_t, endpointCount - 1>, configsCount> inHandlers{};
-	std::array<std::array<handler_t, endpointCount - 1>, configsCount> outHandlers{};
+	static std::array<std::array<handler_t, endpointCount - 1>, configsCount> inHandlers{};
+	static std::array<std::array<handler_t, endpointCount - 1>, configsCount> outHandlers{};
 
 	/*!
 	* Transmitting packets:

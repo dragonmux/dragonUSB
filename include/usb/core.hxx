@@ -16,9 +16,6 @@ namespace usb::core
 	extern std::array<usb::types::usbEPStatus_t<const void>, endpointCount> epStatusControllerIn;
 	extern std::array<usb::types::usbEPStatus_t<void>, endpointCount> epStatusControllerOut;
 
-	extern std::array<std::array<usb::types::handler_t, endpointCount - 1>, configsCount> inHandlers;
-	extern std::array<std::array<usb::types::handler_t, endpointCount - 1>, configsCount> outHandlers;
-
 	extern const uint8_t *sendData(uint8_t ep, const uint8_t *buffer, uint8_t length) noexcept;
 	extern uint8_t *recvData(uint8_t ep, uint8_t *buffer, uint8_t length) noexcept;
 
