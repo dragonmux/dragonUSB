@@ -62,6 +62,7 @@ namespace usb::device
 	bool handleSetConfiguration() noexcept
 	{
 		usb::core::resetEPs(epReset_t::user);
+		usb::core::deinitHandlers();
 
 		const auto config{packet.value.asConfiguration()};
 		if (config > usb::types::configsCount)
@@ -90,17 +91,7 @@ namespace usb::device
 					setupEndpoint(endpoint, startAddress);
 				}
 			}
-
-			for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[activeConfig]})
-			{
-				if (handler.init)
-					handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
-			}
-			for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[activeConfig]})
-			{
-				if (handler.init)
-					handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
-			}
+			usb::core::initHandlers();
 		}
 		else
 			return false;
