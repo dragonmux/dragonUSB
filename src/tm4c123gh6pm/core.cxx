@@ -110,7 +110,7 @@ namespace usb::core
 	{
 		const auto endpoint{ep.endpoint()};
 		const auto direction{ep.dir()};
-		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
+		if (!endpoint || endpoint >= endpointCount || !config || config > configsCount)
 			return;
 		if (direction == endpointDir_t::controllerIn)
 			inHandlers[config - 1U][endpoint - 1U] = handler;
@@ -122,7 +122,7 @@ namespace usb::core
 	{
 		const auto endpoint{ep.endpoint()};
 		const auto direction{ep.dir()};
-		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
+		if (!endpoint || endpoint >= endpointCount || !config || config > configsCount)
 			return;
 		if (direction == endpointDir_t::controllerIn)
 			inHandlers[config - 1U][endpoint - 1U] = {};
