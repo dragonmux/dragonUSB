@@ -113,9 +113,9 @@ namespace usb::core
 		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
 			return;
 		if (direction == endpointDir_t::controllerIn)
-			inHandlers[config][endpoint - 1U] = handler;
+			inHandlers[config - 1U][endpoint - 1U] = handler;
 		else
-			outHandlers[config][endpoint - 1U] = handler;
+			outHandlers[config - 1U][endpoint - 1U] = handler;
 	}
 
 	void unregisterHandler(usbEP_t ep, const uint8_t config) noexcept
@@ -125,19 +125,22 @@ namespace usb::core
 		if (!endpoint || endpoint >= endpointCount || !config || config >= configsCount)
 			return;
 		if (direction == endpointDir_t::controllerIn)
-			inHandlers[config][endpoint - 1U] = {};
+			inHandlers[config - 1U][endpoint - 1U] = {};
 		else
-			outHandlers[config][endpoint - 1U] = {};
+			outHandlers[config - 1U][endpoint - 1U] = {};
 	}
 
 	void initHandlers() noexcept
 	{
-		for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[usb::device::activeConfig]})
+		if (!usb::device::activeConfig)
+			return; // Nothing to do for the unconfigured configuration (activeConfig == 0)
+		const auto config{usb::device::activeConfig - 1};
+		for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[config]})
 		{
 			if (handler.init)
 				handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
 		}
-		for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[usb::device::activeConfig]})
+		for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[config]})
 		{
 			if (handler.init)
 				handler.init(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
