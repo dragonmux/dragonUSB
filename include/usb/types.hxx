@@ -24,6 +24,7 @@ namespace usb::types
 	struct handler_t final
 	{
 		void (*init)(uint8_t endpoint);
+		void (*deinit)(uint8_t endpoint);
 		void (*handlePacket)(uint8_t endpoint);
 	};
 

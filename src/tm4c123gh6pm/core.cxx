@@ -134,7 +134,7 @@ namespace usb::core
 	{
 		if (!usb::device::activeConfig)
 			return; // Nothing to do for the unconfigured configuration (activeConfig == 0)
-		const auto config{usb::device::activeConfig - 1};
+		const auto config{usb::device::activeConfig - 1U};
 		for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[config]})
 		{
 			if (handler.init)
@@ -149,6 +149,19 @@ namespace usb::core
 
 	void deinitHandlers() noexcept
 	{
+		if (!usb::device::activeConfig)
+			return; // Nothing to do for the unconfigured configuration (activeConfig == 0)
+		const auto config{usb::device::activeConfig - 1U};
+		for (const auto &[i, handler] : substrate::indexedIterator_t{inHandlers[config]})
+		{
+			if (handler.deinit)
+				handler.deinit(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
+		}
+		for (const auto &[i, handler] : substrate::indexedIterator_t{outHandlers[config]})
+		{
+			if (handler.deinit)
+				handler.deinit(uint8_t(i + 1U)); // i + 1 is the endpoint the handler is registered on
+		}
 	}
 
 	usb::types::handler_t handlerFor(usb::types::usbEP_t ep, uint8_t config) noexcept
