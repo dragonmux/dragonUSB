@@ -395,7 +395,7 @@ namespace usb::core
 		if (endpoint == 0)
 			return usbCtrl.ep0Ctrl.statusCtrlL & vals::usb::ep0StatusCtrlLRxReady;
 		else
-			return usbCtrl.epCtrls[endpoint - 1].rxStatusCtrlL & vals::usb::epStatusCtrlLRxReady;
+			return usbCtrl.epCtrls[endpoint - 1U].rxStatusCtrlL & vals::usb::epStatusCtrlLRxReady;
 	}
 
 	bool writeEPBusy(const uint8_t endpoint) noexcept
@@ -403,7 +403,7 @@ namespace usb::core
 		if (endpoint == 0)
 			return usbCtrl.ep0Ctrl.statusCtrlL & vals::usb::ep0StatusCtrlLTxReady;
 		else
-			return usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL & vals::usb::epStatusCtrlLTxReady;
+			return usbCtrl.epCtrls[endpoint - 1U].txStatusCtrlL & vals::usb::epStatusCtrlLTxReady;
 	}
 
 	void clearWaitingRXIRQs() noexcept { vals::readDiscard(usbCtrl.rxIntStatus); }
@@ -461,13 +461,13 @@ namespace usb::core
 				{
 					const auto &handler
 					{
-						[](const uint8_t index)
+						[](const size_t config, const size_t index)
 						{
 							if (usbPacket.dir() == endpointDir_t::controllerIn)
-								return inHandlers[usb::device::activeConfig][index];
+								return inHandlers[config][index];
 							else
-								return outHandlers[usb::device::activeConfig][index];
-						}(endpoint - 1U)
+								return outHandlers[config][index];
+						}(usb::device::activeConfig - 1U, endpoint - 1U)
 					};
 					if (handler.handlePacket)
 						handler.handlePacket(endpoint);
