@@ -84,6 +84,17 @@ namespace usb::core
 		usbCtrl.gpCtrlStatus = vals::usb::gpCtrlStatusDeviceMode | vals::usb::gpCtrlStatusOTGModeDevice;
 		usbCtrl.power &= vals::usb::powerMask;
 
+		// Enable the USB NVIC
+		nvic.enableInterrupt(44);
+
+		// Initialise the state machine
+		usbState = deviceState_t::detached;
+		usbCtrlState = ctrlState_t::idle;
+		usbDeferalFlags = 0;
+	}
+
+	void attach() noexcept
+	{
 		// Reset all USB interrupts
 		usbCtrl.intEnable &= vals::usb::itrEnableDeviceMask;
 		usbCtrl.txIntEnable &= vals::usb::txItrEnableMask;
@@ -92,18 +103,29 @@ namespace usb::core
 		vals::readDiscard(usbCtrl.intStatus);
 		vals::readDiscard(usbCtrl.txIntStatus);
 		vals::readDiscard(usbCtrl.rxIntStatus);
+
 		// Ensure the device address is 0
 		usbCtrl.address = 0;
-
-		// Enable the USB NVIC and reset interrupt
-		nvic.enableInterrupt(44);
+		// Ensure we're in the unconfigured configuration
+		usb::device::activeConfig = 0;
+		// Ensure we can respond to reset interrupts
 		usbCtrl.intEnable |= vals::usb::itrEnableDeviceReset;
-
-		// Initialise the state machine
-		usbState = deviceState_t::detached;
-		usbCtrlState = ctrlState_t::idle;
-		usbDeferalFlags = 0;
+		// Attach to the bus
 		usbCtrl.power |= vals::usb::powerSoftConnect;
+	}
+
+	void detach() noexcept
+	{
+		// Detach from the bus
+		usbCtrl.power &= vals::usb::powerSoftDisconnectMask;
+		// Reset all USB interrupts
+		usbCtrl.intEnable &= vals::usb::itrEnableDeviceMask;
+		usbCtrl.txIntEnable &= vals::usb::txItrEnableMask;
+		usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
+		// Ensure that the current configuration is torn down
+		deinitHandlers();
+		// Switch to the unconfigured configuration
+		usb::device::activeConfig = 0;
 	}
 
 	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t &handler) noexcept
@@ -223,7 +245,7 @@ namespace usb::core
 		}
 	}
 
-	void detach() noexcept
+	void cycleBus() noexcept
 	{
 		if (usbState == deviceState_t::detached)
 			return;
@@ -415,7 +437,7 @@ namespace usb::core
 		const auto txStatus{usbCtrl.txIntStatus & usbCtrl.txIntEnable};
 
 		if (status & vals::usb::itrStatusDisconnect)
-			return detach();
+			return cycleBus();
 		else if (usbState == deviceState_t::attached)
 		{
 			usbCtrl.intEnable |= vals::usb::itrEnableSuspend;
