@@ -25,7 +25,7 @@ endif
 subdir(get_option('chip'))
 
 dragonUSBSrc = [
-	platformSrcs, 'device.cxx'
+	platformSrcs
 ]
 
 dragonUSB = static_library(

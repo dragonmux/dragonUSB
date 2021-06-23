@@ -1,4 +1,4 @@
 # SPDX-License-Identifier: BSD-3-Clause
 platformSrcs = files([
-	'core.cxx'
+	'core.cxx', 'device.cxx'
 ])
