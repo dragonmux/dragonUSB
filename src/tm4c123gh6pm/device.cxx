@@ -130,6 +130,9 @@ namespace usb::device
 			case request_t::setAddress:
 				usbState = deviceState_t::addressing;
 				return {response_t::zeroLength, nullptr, 0};
+			case request_t::setDescriptor:
+				// We do not support setting descriptors.
+				return {response_t::stall, nullptr, 0};
 			case request_t::getDescriptor:
 				return handleGetDescriptor();
 			case request_t::setConfiguration:
@@ -155,6 +158,8 @@ namespace usb::device
 					return {response_t::zeroLength, nullptr, 0};
 				}
 				// Bad request? Stall.
+				return {response_t::stall, nullptr, 0};
+			case request_t::syncFrame: // Only used for isochronous stuff anyway.
 				return {response_t::stall, nullptr, 0};
 		}
 
