@@ -16,6 +16,8 @@ namespace usb::device
 	uint8_t activeConfig{};
 	std::array<uint8_t, 2> statusResponse{};
 
+	std::array<std::array<uint8_t, interfaceCount>, configsCount> alternateModes{};
+
 	void setupEndpoint(const usbEndpointDescriptor_t &endpoint, uint16_t &startAddress)
 	{
 		if (endpoint.endpointType == usbEndpointType_t::control)
@@ -134,13 +136,26 @@ namespace usb::device
 				if (handleSetConfiguration())
 					// Acknowledge the request.
 					return {response_t::zeroLength, nullptr, 0};
-				else
-					// Bad request? Stall.
-					return {response_t::stall, nullptr, 0};
+				// Bad request? Stall.
+				return {response_t::stall, nullptr, 0};
 			case request_t::getConfiguration:
 				return {response_t::data, &activeConfig, 1};
 			case request_t::getStatus:
 				return handleGetStatus();
+			case request_t::getInterface:
+				if (packet.index < interfaceCount && packet.length == 1 && !packet.value && activeConfig)
+					return {response_t::data, &alternateModes[activeConfig - 1U][packet.index], 1};
+				return {response_t::stall, nullptr, 0};
+			case request_t::setInterface:
+				// If the interface is valid and we're configured
+				if (packet.index < interfaceCount && !packet.length && packet.value < 0x0100U && activeConfig)
+				{
+					alternateModes[activeConfig - 1U][packet.index] = uint8_t(packet.value);
+					// Acknowledge the request.
+					return {response_t::zeroLength, nullptr, 0};
+				}
+				// Bad request? Stall.
+				return {response_t::stall, nullptr, 0};
 		}
 
 		return {response_t::unhandled, nullptr, 0};

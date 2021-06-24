@@ -10,16 +10,17 @@ namespace usb::descriptors { struct usbMultiPartTable_t; }
 namespace usb::types
 {
 	// Reserve space for EP0 In + Out, and EP1 In + Out.
-	constexpr static const uint8_t endpointCount{2};
-	constexpr static const uint8_t configsCount{1};
-	constexpr static const uint8_t epBufferSize{64};
+	constexpr static uint8_t endpointCount{2};
+	constexpr static uint8_t configsCount{1};
+	constexpr static uint8_t interfaceCount{2};
+	constexpr static uint8_t epBufferSize{64};
 
-	constexpr static const uint16_t vid{0x1209};
-	constexpr static const uint16_t pid{0xAB0C};
+	constexpr static uint16_t vid{0x1209};
+	constexpr static uint16_t pid{0xAB0C};
 
-	constexpr static const uint8_t interfaceDescriptorCount{1};
-	constexpr static const uint8_t endpointDescriptorCount{2};
-	constexpr static const uint8_t stringCount{4};
+	constexpr static uint8_t interfaceDescriptorCount{1};
+	constexpr static uint8_t endpointDescriptorCount{2};
+	constexpr static uint8_t stringCount{4};
 
 	struct handler_t final
 	{
