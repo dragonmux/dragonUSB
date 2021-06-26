@@ -4,6 +4,7 @@
 #include "usb/device.hxx"
 #include <substrate/indexed_iterator>
 
+using namespace usb::constants;
 using namespace usb::types;
 using namespace usb::core;
 using usb::descriptors::usbDescriptor_t;
@@ -67,13 +68,13 @@ namespace usb::device
 		usb::core::deinitHandlers();
 
 		const auto config{packet.value.asConfiguration()};
-		if (config > usb::types::configsCount)
+		if (config > configsCount)
 			return false;
 		activeConfig = config;
 
 		if (activeConfig == 0)
 			usbState = deviceState_t::addressed;
-		else if (activeConfig <= usb::types::configsCount)
+		else if (activeConfig <= configsCount)
 		{
 			// EP0 consumes the first 256 bytes of USB RAM.
 			uint16_t startAddress{256};
@@ -197,9 +198,9 @@ namespace usb::device
 		const auto sendCount{[&]() noexcept -> uint8_t
 		{
 			// Bounds sanity and then adjust how much is left to transfer
-			if (epStatus.transferCount < usb::types::epBufferSize)
+			if (epStatus.transferCount < epBufferSize)
 				return uint8_t(epStatus.transferCount);
-			return usb::types::epBufferSize;
+			return epBufferSize;
 		}()};
 		epStatus.transferCount -= sendCount;
 

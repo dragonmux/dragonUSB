@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <string_view>
+#include "usb/constants.hxx"
 #include "usb/types.hxx"
 
 namespace usb::descriptors
@@ -299,7 +300,7 @@ namespace usb::descriptors
 		}
 	};
 
-	extern const std::array<usbMultiPartTable_t, usb::types::configsCount> usbConfigDescriptors;
+	extern const std::array<usbMultiPartTable_t, usb::constants::configsCount> usbConfigDescriptors;
 } // namespace usb::descriptors
 
 #endif /*USB_DESCRIPTORS___HXX*/

@@ -2,12 +2,12 @@
 #ifndef USB_CORE___HXX
 #define USB_CORE___HXX
 
+#include "usb/constants.hxx"
 #include "usb/types.hxx"
 
 namespace usb::core
 {
-	using usb::types::endpointCount;
-	using usb::types::configsCount;
+	using namespace usb::constants;
 
 	extern usb::types::deviceState_t usbState;
 	extern usb::types::usbEP_t usbPacket;

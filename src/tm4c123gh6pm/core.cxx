@@ -13,6 +13,7 @@
  * PB1 - VBus
  */
 
+using namespace usb::constants;
 using namespace usb::types;
 
 namespace usb::core
@@ -332,9 +333,9 @@ namespace usb::core
 		const auto sendCount{[&]() noexcept -> uint8_t
 		{
 			// Bounds sanity and then adjust how much is left to transfer
-			if (epStatus.transferCount < usb::types::epBufferSize)
+			if (epStatus.transferCount < epBufferSize)
 				return uint8_t(epStatus.transferCount);
-			return usb::types::epBufferSize;
+			return epBufferSize;
 		}()};
 		epStatus.transferCount -= sendCount;
 
