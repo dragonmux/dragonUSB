@@ -17,3 +17,6 @@ option('endpointDescriptors', type: 'integer', min: 0, max: 64, value: 0,
 	description: 'How many endpoint descriptors you have')
 option('strings', type: 'integer', min: 0, max: 255, value: 0,
 	description: 'How many string you have that need sending over USB')
+
+option('drivers', type: 'array', value: [], description: 'Which drivers you wish to enable',
+	choices: ['dfu'])

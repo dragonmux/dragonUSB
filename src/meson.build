@@ -22,9 +22,10 @@ else
 endif
 
 subdir(get_option('chip'))
+subdir('drivers')
 
 dragonUSBSrc = [
-	platformSrcs
+	platformSrcs, drivers
 ]
 
 buildDefs = [
