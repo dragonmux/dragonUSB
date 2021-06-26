@@ -1,3 +1,19 @@
 # SPDX-License-Identifier: BSD-3-Clause
 option('chip', type: 'combo', description: 'Which chip you wish to target',
 	choices: ['unknown', 'tm4c123gh6pm', 'atxmega256a3u'])
+
+option('interfaces', type: 'integer', min: 1, max: 32, value: 1,
+	description: 'The number of interfaces you need')
+option('endpoints', type: 'integer', min: 0, max: 7, value: 0,
+	description: 'The number of endpoints you use (excluding EP0)')
+option('epBufferSize', type: 'integer', min: 8, max: 64, value: 64,
+	description: 'How big a buffer to use for endpoint data')
+
+option('configDescriptors', type: 'integer', min: 1, max: 8, value: 1,
+	description: 'How many configuration descriptors you have')
+option('ifaceDescriptors', type: 'integer', min: 1, max: 32, value: 1,
+	description: 'How many interface descriptors you have')
+option('endpointDescriptors', type: 'integer', min: 0, max: 64, value: 0,
+	description: 'How many endpoint descriptors you have')
+option('strings', type: 'integer', min: 0, max: 255, value: 0,
+	description: 'How many string you have that need sending over USB')

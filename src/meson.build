@@ -28,9 +28,20 @@ dragonUSBSrc = [
 	platformSrcs
 ]
 
+buildDefs = [
+	'-DUSB_INTERFACES=@0@'.format(get_option('interfaces')),
+	'-DUSB_ENDPOINTS=@0@'.format(get_option('endpoints')),
+	'-DUSB_BUFFER_SIZE=@0@'.format(get_option('epBufferSize')),
+	'-DUSB_CONFIG_DESCRIPTORS=@0@'.format(get_option('configDescriptors')),
+	'-DUSB_INTERFACE_DESCRIPTORS=@0@'.format(get_option('ifaceDescriptors')),
+	'-DUSB_ENDPOINT_DESCRIPTORS=@0@'.format(get_option('endpointDescriptors')),
+	'-DUSB_STRINGS=@0@'.format(get_option('strings'))
+]
+
 dragonUSB = static_library(
 	'dragonUSB',
 	dragonUSBSrc,
+	cpp_args: buildDefs,
 	include_directories: [include_directories('../include')],
 	dependencies: [platform, substrate],
 	gnu_symbol_visibility: 'inlineshidden',
