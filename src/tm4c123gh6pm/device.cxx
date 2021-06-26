@@ -18,6 +18,7 @@ namespace usb::device
 	std::array<uint8_t, 2> statusResponse{};
 
 	std::array<std::array<uint8_t, interfaceCount>, configsCount> alternateModes{};
+	std::array<std::array<controlHandler_t, interfaceCount>, configsCount> controlHandlers{};
 
 	void setupEndpoint(const usbEndpointDescriptor_t &endpoint, uint16_t &startAddress)
 	{
@@ -165,6 +166,20 @@ namespace usb::device
 		}
 
 		return {response_t::unhandled, nullptr, 0};
+	}
+
+	void registerHandler(const uint8_t interface, const uint8_t config, controlHandler_t handler) noexcept
+	{
+		if (!interface || interface > interfaceCount || !config || config > configsCount)
+			return;
+		controlHandlers[config - 1U][interface - 1U] = handler;
+	}
+
+	void unregisterHandler(const uint8_t interface, const uint8_t config) noexcept
+	{
+		if (!interface || interface > interfaceCount || !config || config > configsCount)
+			return;
+		controlHandlers[config - 1U][interface - 1U] = nullptr;
 	}
 
 	/*!
@@ -344,7 +359,19 @@ namespace usb::device
 		epStatusControllerOut[0].stall(false);
 		epStatusControllerOut[0].transferCount = 0;
 
-		const auto &[response, data, size] = handleStandardRequest();
+		response_t response{response_t::unhandled};
+		const void *data{nullptr};
+		std::uint16_t size{0};
+
+		std::tie(response, data, size) = handleStandardRequest();
+		if (response == response_t::unhandled && activeConfig)
+		{
+			for (const auto &[i, handler] : substrate::indexedIterator_t{controlHandlers[activeConfig - 1U]})
+			{
+				if (handler)
+					std::tie(response, data, size) = handler(i + 1U, packet);
+			}
+		}
 
 		epStatusControllerIn[0].stall(response == response_t::stall || response == response_t::unhandled);
 		epStatusControllerIn[0].needsArming(response == response_t::data || response == response_t::zeroLength);

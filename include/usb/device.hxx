@@ -139,6 +139,11 @@ namespace usb::device
 
 	extern void handleControlPacket() noexcept;
 	extern usb::types::answer_t handleGetDescriptor() noexcept;
+
+	using controlHandler_t = usb::types::answer_t (*)(std::size_t interface, const usb::types::setupPacket_t &packet);
+
+	extern void registerHandler(uint8_t interface, uint8_t config, controlHandler_t handler) noexcept;
+	extern void unregisterHandler(uint8_t interface, uint8_t config) noexcept;
 } // namespace usb::device
 
 #endif /*USB_DEVICE___HXX*/
