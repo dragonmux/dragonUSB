@@ -149,6 +149,11 @@ namespace usb::descriptors
 			bootInterface = 1
 		};
 
+		enum class application_t : uint8_t
+		{
+			dfu = 1
+		};
+
 		enum class vendor_t : uint8_t
 		{
 			none = 0
@@ -167,6 +172,11 @@ namespace usb::descriptors
 			none = 0,
 			keyboard = 1,
 			mouse = 2
+		};
+
+		enum class applciation_t : uint8_t
+		{
+			runtime = 1
 		};
 
 		enum class vendor_t : uint8_t
@@ -235,27 +245,19 @@ namespace usb::descriptors
 
 	namespace dfu
 	{
-		enum class subclass_t : uint8_t
+		enum class descriptor_t : uint8_t
 		{
-			dfu = 1
+			functional = 0x21U
 		};
 
-		enum class protocol_t : uint8_t
-		{
-			runtime = 1
-		};
-
-		struct interfaceDescriptor_t
+		struct [[gnu::packed]] functionalDescriptor_t
 		{
 			uint8_t length;
-			usbDescriptor_t descriptorType;
-			uint8_t interfaceNumber;
-			uint8_t alternateSetting;
-			uint8_t numEndpoints;
-			usbClass_t interfaceClass;
-			subclass_t interfaceSubclass;
-			protocol_t interfaceProtocol;
-			uint8_t strInterfaceIdx;
+			descriptor_t descriptorType;
+			uint8_t attributes;
+			uint16_t detachTimeout;
+			uint16_t transferSize;
+			uint16_t dfuVersion;
 		};
 	} // namespace dfu
 
