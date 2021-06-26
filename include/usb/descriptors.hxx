@@ -250,11 +250,62 @@ namespace usb::descriptors
 			functional = 0x21U
 		};
 
+		enum class willDetach_t : uint8_t
+		{
+			no = 0x00U,
+			yes = 0x08U
+		};
+
+		enum class manifestationTolerant_t : uint8_t
+		{
+			no = 0x00U,
+			yes = 0x04U
+		};
+
+		enum class canUpload_t : uint8_t
+		{
+			no = 0x00U,
+			yes = 0x02U
+		};
+
+		enum class canDownload_t : uint8_t
+		{
+			no = 0x00U,
+			yes = 0x01U
+		};
+
+		struct attributes_t final
+		{
+		private:
+			uint8_t value;
+
+		public:
+			constexpr attributes_t(const willDetach_t willDetach, const manifestationTolerant_t manifTolerant,
+				const canUpload_t canUpload, const canDownload_t canDownload) noexcept :
+					value
+					{
+						uint8_t(uint8_t(willDetach) | uint8_t(manifTolerant) |
+						uint8_t(canUpload) | uint8_t(canDownload))
+					} { }
+
+			[[nodiscard]] constexpr willDetach_t willDetach() const noexcept
+				{ return static_cast<willDetach_t>(value & uint8_t(willDetach_t::yes)); }
+
+			[[nodiscard]] constexpr manifestationTolerant_t manifestationTolerant() const noexcept
+				{ return static_cast<manifestationTolerant_t>(value & uint8_t(manifestationTolerant_t::yes)); }
+
+			[[nodiscard]] constexpr canUpload_t canUpload() const noexcept
+				{ return static_cast<canUpload_t>(value & uint8_t(canUpload_t::yes)); }
+
+			[[nodiscard]] constexpr canDownload_t canDownload() const noexcept
+				{ return static_cast<canDownload_t>(value & uint8_t(canDownload_t::yes)); }
+		};
+
 		struct [[gnu::packed]] functionalDescriptor_t
 		{
 			uint8_t length;
 			descriptor_t descriptorType;
-			uint8_t attributes;
+			attributes_t attributes;
 			uint16_t detachTimeout;
 			uint16_t transferSize;
 			uint16_t dfuVersion;
