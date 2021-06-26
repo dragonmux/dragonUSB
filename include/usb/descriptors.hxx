@@ -233,6 +233,32 @@ namespace usb::descriptors
 		};
 	} // namespace hid
 
+	namespace dfu
+	{
+		enum class subclass_t : uint8_t
+		{
+			dfu = 1
+		};
+
+		enum class protocol_t : uint8_t
+		{
+			runtime = 1
+		};
+
+		struct interfaceDescriptor_t
+		{
+			uint8_t length;
+			usbDescriptor_t descriptorType;
+			uint8_t interfaceNumber;
+			uint8_t alternateSetting;
+			uint8_t numEndpoints;
+			usbClass_t interfaceClass;
+			subclass_t interfaceSubclass;
+			protocol_t interfaceProtocol;
+			uint8_t strInterfaceIdx;
+		};
+	} // namespace dfu
+
 	struct usbMultiPartDesc_t
 	{
 		uint8_t length;
