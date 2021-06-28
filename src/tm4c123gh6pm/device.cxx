@@ -7,9 +7,7 @@
 using namespace usb::constants;
 using namespace usb::types;
 using namespace usb::core;
-using usb::descriptors::usbDescriptor_t;
-using usb::descriptors::usbEndpointType_t;
-using usb::descriptors::usbEndpointDescriptor_t;
+using namespace usb::descriptors;
 
 namespace usb::device
 {
@@ -19,6 +17,73 @@ namespace usb::device
 
 	std::array<std::array<uint8_t, interfaceCount>, configsCount> alternateModes{};
 	std::array<std::array<controlHandler_t, interfaceCount>, configsCount> controlHandlers{};
+
+	static const usbStringDesc_t stringLangIDDescriptor{{u"\x0904", 1}};
+	static const auto stringLangIDParts{stringLangIDDescriptor.asParts()};
+	static const usbMultiPartTable_t stringLangID{stringLangIDParts.begin(), stringLangIDParts.end()};
+
+	answer_t handleGetDescriptor() noexcept
+	{
+		using namespace usb::descriptors;
+		if (packet.requestType.dir() == endpointDir_t::controllerOut)
+			return {response_t::unhandled, nullptr, 0};
+		const auto descriptor = packet.value.asDescriptor();
+
+		switch (descriptor.type)
+		{
+			// Handle device descriptor requests
+			case usbDescriptor_t::device:
+				return {response_t::data, &deviceDescriptor, deviceDescriptor.length};
+			case usbDescriptor_t::deviceQualifier:
+				return {response_t::stall, nullptr, 0};
+			// Handle configuration descriptor requests
+			case usbDescriptor_t::configuration:
+			{
+				if (descriptor.index >= configsCount)
+					break;
+				static_assert(sizeof(usbConfigDescriptor_t) == 9);
+				static_assert(sizeof(usbInterfaceDescriptor_t) == 9);
+				static_assert(sizeof(usbEndpointDescriptor_t) == 7);
+				const auto &configDescriptor{configDescriptors[descriptor.index]};
+				epStatusControllerIn[0].isMultiPart(true);
+				epStatusControllerIn[0].partNumber = 0;
+				epStatusControllerIn[0].partsData = &configDescriptor;
+				return {response_t::data, nullptr, configDescriptor.totalLength()};
+			}
+			// Handle interface descriptor requests
+			case usbDescriptor_t::interface:
+			{
+				if (descriptor.index >= interfaceDescriptorCount)
+					break;
+				const auto &interfaceDescriptor{interfaceDescriptors[descriptor.index]};
+				return {response_t::data, &interfaceDescriptor, interfaceDescriptor.length};
+			}
+			// Handle endpoint descriptor requests
+			case usbDescriptor_t::endpoint:
+			{
+				if (descriptor.index >= endpointDescriptorCount)
+					break;
+				const auto &endpointDescriptor{endpointDescriptors[descriptor.index]};
+				return {response_t::data, &endpointDescriptor, endpointDescriptor.length};
+			}
+			// Handle string requests
+			case usbDescriptor_t::string:
+			{
+				if (descriptor.index > stringCount)
+					break;
+				epStatusControllerIn[0].isMultiPart(true);
+				epStatusControllerIn[0].partNumber = 0;
+				if (descriptor.index)
+					epStatusControllerIn[0].partsData = &strings[descriptor.index - 1U];
+				else
+					epStatusControllerIn[0].partsData = &stringLangID;
+				return {response_t::data, nullptr, epStatusControllerIn[0].partsData->totalLength()};
+			}
+			default:
+				break;
+		}
+		return {response_t::unhandled, nullptr, 0};
+	}
 
 	void setupEndpoint(const usbEndpointDescriptor_t &endpoint, uint16_t &startAddress)
 	{
@@ -83,7 +148,7 @@ namespace usb::device
 			usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
 			usbCtrl.txIntEnable |= vals::usb::txItrEnableEP0;
 
-			const auto descriptors{usb::descriptors::usbConfigDescriptors[activeConfig - 1U]};
+			const auto descriptors{configDescriptors[activeConfig - 1U]};
 			for (const auto &part : descriptors)
 			{
 				const auto *const descriptor{static_cast<const std::byte *>(part.descriptor)};

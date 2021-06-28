@@ -381,7 +381,13 @@ namespace usb::descriptors
 		}
 	};
 
-	extern const std::array<usbMultiPartTable_t, usb::constants::configsCount> usbConfigDescriptors;
+	inline namespace constants { using namespace usb::constants; }
+
+	extern const usbDeviceDescriptor_t deviceDescriptor;
+	extern const std::array<usbMultiPartTable_t, configsCount> configDescriptors;
+	extern const std::array<usbInterfaceDescriptor_t, interfaceDescriptorCount> interfaceDescriptors;
+	extern const std::array<usbEndpointDescriptor_t, endpointDescriptorCount> endpointDescriptors;
+	extern const std::array<usbMultiPartTable_t, stringCount> strings;
 } // namespace usb::descriptors
 
 #endif /*USB_DESCRIPTORS___HXX*/

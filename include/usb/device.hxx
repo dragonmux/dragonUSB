@@ -138,7 +138,6 @@ namespace usb::device
 	extern uint8_t activeConfig;
 
 	extern void handleControlPacket() noexcept;
-	extern usb::types::answer_t handleGetDescriptor() noexcept;
 
 	using controlHandler_t = usb::types::answer_t (*)(std::size_t interface, const usb::types::setupPacket_t &packet);
 
