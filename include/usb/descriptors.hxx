@@ -326,12 +326,12 @@ namespace usb::descriptors
 
 	public:
 		constexpr usbMultiPartTable_t(const usbMultiPartDesc_t *const begin,
-			const usbMultiPartDesc_t *const end) noexcept: _begin{begin}, _end{end} { }
-		constexpr auto begin() const noexcept { return _begin; }
-		constexpr auto end() const noexcept { return _end; }
-		constexpr auto count() const noexcept { return _end - _begin; }
+			const usbMultiPartDesc_t *const end) noexcept : _begin{begin}, _end{end} { }
+		[[nodiscard]] constexpr auto begin() const noexcept { return _begin; }
+		[[nodiscard]] constexpr auto end() const noexcept { return _end; }
+		[[nodiscard]] constexpr auto count() const noexcept { return _end - _begin; }
 
-		constexpr auto &part(const std::size_t index) const noexcept
+		[[nodiscard]] constexpr auto &part(const std::size_t index) const noexcept
 		{
 			if (_begin + index >= _end)
 				return *_end;
@@ -339,7 +339,7 @@ namespace usb::descriptors
 		}
 		constexpr auto &operator [](const std::size_t index) const noexcept { return part(index); }
 
-		constexpr auto totalLength() const noexcept
+		[[nodiscard]] constexpr auto totalLength() const noexcept
 		{
 			// TODO: Convert to std::accumulate() later.
 			std::size_t count{};
@@ -355,14 +355,16 @@ namespace usb::descriptors
 		usbDescriptor_t descriptorType;
 		const char16_t *const string;
 
-		constexpr usbStringDesc_t(const std::u16string_view data) :
+		constexpr usbStringDesc_t(const std::u16string_view data) noexcept :
 			length{uint8_t(baseLength() + (data.length() * 2))},
 			descriptorType{usbDescriptor_t::string}, string{data.data()} { }
 
-		constexpr uint8_t baseLength() const noexcept { return sizeof(usbStringDesc_t) - sizeof(char16_t *); }
-		constexpr uint8_t stringLength() const noexcept { return length - baseLength(); }
+		[[nodiscard]] constexpr static uint8_t baseLength() noexcept
+			{ return sizeof(usbStringDesc_t) - sizeof(char16_t *); }
+		[[nodiscard]] constexpr uint8_t stringLength() const noexcept
+			{ return length - baseLength(); }
 
-		constexpr auto asParts() const noexcept
+		[[nodiscard]] constexpr auto asParts() const noexcept
 		{
 			const std::array<usbMultiPartDesc_t, 2> parts
 			{{
