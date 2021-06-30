@@ -218,7 +218,7 @@ namespace usb::device
 		static_assert(sizeof(setupPacket_t) == 8); // Setup packets must be 8 bytes.
 		epStatusControllerOut[0].memBuffer = &packet;
 		epStatusControllerOut[0].transferCount = sizeof(setupPacket_t);
-		if (!readCtrlEP())
+		if (!readEP(0))
 		{
 			// Truncated transfer.. WTF.
 			usb::core::stallEP(0);
@@ -265,7 +265,7 @@ namespace usb::device
 		// If we're in the data phase
 		if (usbCtrlState == ctrlState_t::dataRX)
 		{
-			if (readCtrlEP())
+			if (readEP(0))
 			{
 				// If we now have all the data for the transaction..
 				usbCtrlState = ctrlState_t::statusTX;

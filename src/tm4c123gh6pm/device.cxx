@@ -95,27 +95,6 @@ namespace usb::device
 	}
 
 	/*!
-	* @returns true when the all the data to be read has been retreived,
-	* false if there is more left to fetch.
-	*/
-	bool readCtrlEP() noexcept
-	{
-		auto &epStatus{epStatusControllerOut[0]};
-		auto readCount{usbCtrl.ep0Ctrl.rxCount};
-		// Bounds sanity and then adjust how much is left to transfer
-		if (readCount > epStatus.transferCount)
-			readCount = uint8_t(epStatus.transferCount);
-		epStatus.transferCount -= readCount;
-		epStatus.memBuffer = recvData(0, static_cast<uint8_t *>(epStatus.memBuffer), readCount);
-		// Mark the FIFO contents as done with
-		if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusRX)
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
-		else
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
-		return !epStatus.transferCount;
-	}
-
-	/*!
 	* @returns true when the data to be transmitted is entirely sent,
 	* false if there is more left to send.
 	*/

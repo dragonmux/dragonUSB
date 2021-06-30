@@ -318,15 +318,29 @@ namespace usb::core
 		if (!endpoint)
 			return false;
 		auto &epStatus{epStatusControllerOut[endpoint]};
-		auto readCount{usbCtrl.epCtrls[endpoint - 1].rxCount};
+		auto readCount
+		{
+			[endpoint]() -> uint16_t
+			{
+				if (endpoint)
+					return usbCtrl.epCtrls[endpoint - 1U].rxCount;
+				else
+					return usbCtrl.ep0Ctrl.rxCount;
+			}()
+		};
 		// Bounds sanity and then adjust how much is left to transfer
 		if (readCount > epStatus.transferCount)
 			readCount = epStatus.transferCount;
 		epStatus.transferCount -= readCount;
 		epStatus.memBuffer = recvData(endpoint, static_cast<uint8_t *>(epStatus.memBuffer), uint8_t(readCount));
 		// Mark the FIFO contents as done with
-		usbCtrl.epCtrls[endpoint - 1].rxStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrlLRxReady |
-			vals::usb::epStatusCtrlLStalled));
+		if (endpoint)
+			usbCtrl.epCtrls[endpoint - 1].rxStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrlLRxReady |
+				vals::usb::epStatusCtrlLStalled));
+		else if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusRX)
+			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
+		else
+			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
 		return !epStatus.transferCount;
 	}
 
