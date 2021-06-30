@@ -309,6 +309,14 @@ namespace usb::core
 		return buffer + length;
 	}
 
+	uint16_t readEPDataAvail(uint8_t endpoint) noexcept
+	{
+		if (endpoint)
+			return usbCtrl.epCtrls[endpoint - 1U].rxCount;
+		else
+			return usbCtrl.ep0Ctrl.rxCount;
+	}
+
 	/*!
 	* @returns true when the all the data to be read has been retreived,
 	* false if there is more left to fetch.
@@ -318,16 +326,7 @@ namespace usb::core
 		if (!endpoint)
 			return false;
 		auto &epStatus{epStatusControllerOut[endpoint]};
-		auto readCount
-		{
-			[endpoint]() -> uint16_t
-			{
-				if (endpoint)
-					return usbCtrl.epCtrls[endpoint - 1U].rxCount;
-				else
-					return usbCtrl.ep0Ctrl.rxCount;
-			}()
-		};
+		auto readCount{readEPDataAvail(endpoint)};
 		// Bounds sanity and then adjust how much is left to transfer
 		if (readCount > epStatus.transferCount)
 			readCount = epStatus.transferCount;
