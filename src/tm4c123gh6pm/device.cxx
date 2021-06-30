@@ -258,7 +258,7 @@ namespace usb::device
 		if (!readCtrlEP())
 		{
 			// Truncated transfer.. WTF.
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLStall;
+			usb::core::stallEP(0);
 			return;
 		}
 
@@ -326,13 +326,12 @@ namespace usb::device
 			if (packet.requestType.type() != setupPacket::request_t::typeStandard ||
 				packet.request != request_t::setAddress || address.addrH != 0)
 			{
-				usbCtrl.address &= vals::usb::addressClrMask;
+				usb::core::address(0);
 				usbState = deviceState_t::waiting;
 			}
 			else
 			{
-				usbCtrl.address = (usbCtrl.address & vals::usb::addressClrMask) |
-					(address.addrL & vals::usb::addressMask);
+				usb::core::address(address.addrL);
 				usbState = deviceState_t::addressed;
 			}
 		}
