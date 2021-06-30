@@ -463,8 +463,6 @@ namespace usb::core
 			return usbCtrl.epCtrls[endpoint - 1U].txStatusCtrlL & vals::usb::epStatusCtrlLTxReady;
 	}
 
-	void clearWaitingRXIRQs() noexcept { vals::readDiscard(usbCtrl.rxIntStatus); }
-
 	void stallEP(const uint8_t endpoint) noexcept
 	{
 		if (endpoint == 0)
