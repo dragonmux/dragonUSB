@@ -3,6 +3,7 @@
 #include "usb/core.hxx"
 #include "usb/device.hxx"
 #include <substrate/indexed_iterator>
+#include <substrate/index_sequence>
 
 /*!
  * USB pinout:
@@ -431,11 +432,46 @@ namespace usb::core
 
 	void clearWaitingRXIRQs() noexcept { vals::readDiscard(usbCtrl.rxIntStatus); }
 
+	void processEndpoints(const uint16_t rxStatus, const uint16_t txStatus) noexcept
+	{
+		for (const auto &endpoint : substrate::indexSequence_t{endpointCount})
+		{
+			const auto endpointMask{uint16_t(1U << endpoint)};
+			if (rxStatus & endpointMask || txStatus & endpointMask)
+			{
+				usbPacket.endpoint(uint8_t(endpoint));
+				if (rxStatus & endpointMask || (endpoint == 0 &&
+						(usbCtrl.ep0Ctrl.statusCtrlL & vals::usb::epStatusCtrlLRxReady)))
+					usbPacket.dir(endpointDir_t::controllerOut);
+				else
+					usbPacket.dir(endpointDir_t::controllerIn);
+
+				if (endpoint == 0)
+					usb::device::handleControlPacket();
+				else
+				{
+					const auto &handler
+					{
+						[](const size_t config, const size_t index)
+						{
+							if (usbPacket.dir() == endpointDir_t::controllerIn)
+								return inHandlers[config][index];
+							else
+								return outHandlers[config][index];
+						}(usb::device::activeConfig - 1U, endpoint - 1U)
+					};
+					if (handler.handlePacket)
+						handler.handlePacket(uint8_t(endpoint));
+				}
+			}
+		}
+	}
+
 	void handleIRQ() noexcept
 	{
-		const auto status{usbCtrl.intStatus & usbCtrl.intEnable};
-		const auto rxStatus{usbCtrl.rxIntStatus & usbCtrl.rxIntEnable};
-		const auto txStatus{usbCtrl.txIntStatus & usbCtrl.txIntEnable};
+		const auto status{uint8_t(usbCtrl.intStatus & usbCtrl.intEnable)};
+		const auto rxStatus{uint16_t(usbCtrl.rxIntStatus & usbCtrl.rxIntEnable)};
+		const auto txStatus{uint16_t(usbCtrl.txIntStatus & usbCtrl.txIntEnable)};
 
 		if (status & vals::usb::itrStatusDisconnect)
 			return cycleBus();
@@ -466,36 +502,6 @@ namespace usb::core
 			(!rxStatus && !txStatus))
 			return;
 
-		for (uint8_t endpoint{}; endpoint < endpointCount; ++endpoint)
-		{
-			const uint16_t endpointMask = 1U << endpoint;
-			if (rxStatus & endpointMask || txStatus & endpointMask)
-			{
-				usbPacket.endpoint(endpoint);
-				if (rxStatus & endpointMask || (endpoint == 0 &&
-						(usbCtrl.ep0Ctrl.statusCtrlL & vals::usb::epStatusCtrlLRxReady)))
-					usbPacket.dir(endpointDir_t::controllerOut);
-				else
-					usbPacket.dir(endpointDir_t::controllerIn);
-
-				if (endpoint == 0)
-					usb::device::handleControlPacket();
-				else
-				{
-					const auto &handler
-					{
-						[](const size_t config, const size_t index)
-						{
-							if (usbPacket.dir() == endpointDir_t::controllerIn)
-								return inHandlers[config][index];
-							else
-								return outHandlers[config][index];
-						}(usb::device::activeConfig - 1U, endpoint - 1U)
-					};
-					if (handler.handlePacket)
-						handler.handlePacket(endpoint);
-				}
-			}
-		}
+		processEndpoints(rxStatus, txStatus);
 	}
 } // namespace usb::core
