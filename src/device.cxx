@@ -210,6 +210,8 @@ namespace usb::device
 		}
 	}
 
+	namespace internal
+	{
 	void handleSetupPacket() noexcept
 	{
 		// Read in the new setup packet
@@ -311,4 +313,5 @@ namespace usb::device
 		else
 			usbCtrlState = ctrlState_t::idle;
 	}
+	} // namespace internal
 } // namespace usb::device
