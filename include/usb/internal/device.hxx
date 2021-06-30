@@ -15,7 +15,12 @@ namespace usb::device::internal
 	extern std::array<std::array<controlHandler_t, interfaceCount>, configsCount> controlHandlers;
 
 	extern bool handleSetConfiguration() noexcept;
-	extern answer_t handleStandardRequest() noexcept;
+	extern void handleControllerInPacket() noexcept;
+	extern void handleControllerOutPacket() noexcept;
+	extern void handleSetupPacket() noexcept;
+
+	extern bool readCtrlEP() noexcept;
+	extern bool writeCtrlEP() noexcept;
 } // namespace usb::device::internal
 
 #endif /*USB_INTERNAL_DEVICE___HXX*/

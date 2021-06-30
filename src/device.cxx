@@ -2,6 +2,7 @@
 #include "usb/core.hxx"
 #include "usb/device.hxx"
 #include "usb/internal/device.hxx"
+#include <substrate/indexed_iterator>
 
 using namespace usb::constants;
 using namespace usb::types;
@@ -167,5 +168,147 @@ namespace usb::device
 		if (!interface || interface > interfaceCount || !config || config > configsCount)
 			return;
 		controlHandlers[config - 1U][interface - 1U] = nullptr;
+	}
+
+	void completeSetupPacket() noexcept
+	{
+		// If we have no response
+		if (!epStatusControllerIn[0].needsArming())
+		{
+			// But rather need more data
+			if (epStatusControllerOut[0].needsArming())
+			{
+				// <SETUP[0]><OUT[1]><OUT[0]>...<IN[1]>
+				usbCtrlState = ctrlState_t::dataRX;
+			}
+			// We need to stall in answer
+			else if (epStatusControllerIn[0].stall())
+			{
+				// <SETUP[0]><STALL>
+				usb::core::stallEP(0);
+				usbCtrlState = ctrlState_t::idle;
+			}
+		}
+		// We have a valid response
+		else
+		{
+			// Is this as part of a multi-part transaction?
+			if (packet.requestType.dir() == endpointDir_t::controllerIn)
+				// <SETUP[0]><IN[1]><IN[0]>...<OUT[1]>
+				usbCtrlState = ctrlState_t::dataTX;
+			// Or just a quick answer?
+			else
+				//  <SETUP[0]><IN[1]>
+				usbCtrlState = ctrlState_t::statusTX;
+			if (writeCtrlEP())
+			{
+				if (usbCtrlState == ctrlState_t::dataTX)
+					usbCtrlState = ctrlState_t::statusRX;
+				else
+					usbCtrlState = ctrlState_t::idle;
+			}
+		}
+	}
+
+	void handleSetupPacket() noexcept
+	{
+		// Read in the new setup packet
+		static_assert(sizeof(setupPacket_t) == 8); // Setup packets must be 8 bytes.
+		epStatusControllerOut[0].memBuffer = &packet;
+		epStatusControllerOut[0].transferCount = sizeof(setupPacket_t);
+		if (!readCtrlEP())
+		{
+			// Truncated transfer.. WTF.
+			usb::core::stallEP(0);
+			return;
+		}
+
+		// Set up EP0 state for a reply of some kind
+		//usbDeferalFlags = 0;
+		usbCtrlState = ctrlState_t::wait;
+		epStatusControllerIn[0].needsArming(false);
+		epStatusControllerIn[0].stall(false);
+		epStatusControllerIn[0].transferCount = 0;
+		epStatusControllerOut[0].needsArming(false);
+		epStatusControllerOut[0].stall(false);
+		epStatusControllerOut[0].transferCount = 0;
+
+		response_t response{response_t::unhandled};
+		const void *data{nullptr};
+		std::uint16_t size{0};
+
+		std::tie(response, data, size) = handleStandardRequest();
+		if (response == response_t::unhandled && activeConfig)
+		{
+			for (const auto &[i, handler] : substrate::indexedIterator_t{controlHandlers[activeConfig - 1U]})
+			{
+				if (handler)
+					std::tie(response, data, size) = handler(i + 1U, packet);
+			}
+		}
+
+		epStatusControllerIn[0].stall(response == response_t::stall || response == response_t::unhandled);
+		epStatusControllerIn[0].needsArming(response == response_t::data || response == response_t::zeroLength);
+		epStatusControllerIn[0].memBuffer = data;
+		const auto transferCount{response == response_t::zeroLength ? uint16_t(0U) : size};
+		epStatusControllerIn[0].transferCount = std::min(transferCount, packet.length);
+		// If the response is whacko, don't do the stupid thing
+		if (response == response_t::data && !data && !epStatusControllerIn[0].isMultiPart())
+			epStatusControllerIn[0].needsArming(false);
+		completeSetupPacket();
+	}
+
+	void handleControllerOutPacket() noexcept
+	{
+		// If we're in the data phase
+		if (usbCtrlState == ctrlState_t::dataRX)
+		{
+			if (readCtrlEP())
+			{
+				// If we now have all the data for the transaction..
+				usbCtrlState = ctrlState_t::statusTX;
+				// TODO: Handle data and generate status response.
+			}
+		}
+		// If we're in the status phase
+		else
+			usbCtrlState = ctrlState_t::idle;
+	}
+
+	void handleControllerInPacket() noexcept
+	{
+		if (usbState == deviceState_t::addressing)
+		{
+			// We just handled an addressing request, and prepared our answer. Before we get a chance
+			// to return from the interrupt that caused this chain of events, lets set the device address.
+			const auto address{packet.value.asAddress()};
+
+			// Check that the last setup packet was actually a set address request
+			if (packet.requestType.type() != setupPacket::request_t::typeStandard ||
+				packet.request != request_t::setAddress || address.addrH != 0)
+			{
+				usb::core::address(0);
+				usbState = deviceState_t::waiting;
+			}
+			else
+			{
+				usb::core::address(address.addrL);
+				usbState = deviceState_t::addressed;
+			}
+		}
+
+		// If we're in the data phase
+		if (usbCtrlState == ctrlState_t::dataTX)
+		{
+			if (writeCtrlEP())
+			{
+				// If we now have all the data for the transaction..
+				//usbCtrlState = ctrlState_t::statusRX;
+				usbCtrlState = ctrlState_t::idle;
+			}
+		}
+		// Otherwise this was a status phase TX-complete interrupt
+		else
+			usbCtrlState = ctrlState_t::idle;
 	}
 } // namespace usb::device
