@@ -432,6 +432,14 @@ namespace usb::core
 
 	void clearWaitingRXIRQs() noexcept { vals::readDiscard(usbCtrl.rxIntStatus); }
 
+	void stallEP(const uint8_t endpoint) noexcept
+	{
+		if (endpoint == 0)
+			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLStall;
+		else
+			usbCtrl.epCtrls[endpoint - 1U].rxStatusCtrlL |= vals::usb::epStatusCtrlLStall;
+	}
+
 	void processEndpoints(const uint16_t rxStatus, const uint16_t txStatus) noexcept
 	{
 		for (const auto &endpoint : substrate::indexSequence_t{endpointCount})
