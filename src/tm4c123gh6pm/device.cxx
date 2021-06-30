@@ -55,6 +55,8 @@ namespace usb::device
 		startAddress += uint16_t(endpoint.maxPacketSize * 2U);
 	}
 
+	namespace internal
+	{
 	bool handleSetConfiguration() noexcept
 	{
 		usb::core::resetEPs(epReset_t::user);
@@ -93,6 +95,7 @@ namespace usb::device
 			return false;
 		return true;
 	}
+	} // namespace internal
 
 	/*!
 	* @returns true when the data to be transmitted is entirely sent,
