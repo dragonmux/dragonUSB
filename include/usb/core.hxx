@@ -7,17 +7,10 @@
 
 namespace usb::core
 {
-	using namespace usb::constants;
-
-	extern usb::types::deviceState_t usbState;
-	extern usb::types::usbEP_t usbPacket;
-	extern usb::types::ctrlState_t usbCtrlState;
+	using usb::constants::endpointCount;
 
 	extern std::array<usb::types::usbEPStatus_t<const void>, endpointCount> epStatusControllerIn;
 	extern std::array<usb::types::usbEPStatus_t<void>, endpointCount> epStatusControllerOut;
-
-	extern const uint8_t *sendData(uint8_t ep, const uint8_t *buffer, uint8_t length) noexcept;
-	extern uint8_t *recvData(uint8_t ep, uint8_t *buffer, uint8_t length) noexcept;
 
 	enum class epReset_t : uint8_t
 	{

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "usb/platform.hxx"
-#include "usb/core.hxx"
+#include "usb/internal/core.hxx"
 #include "usb/device.hxx"
 #include <substrate/indexed_iterator>
 #include <substrate/index_sequence>
@@ -16,21 +16,10 @@
 
 using namespace usb::constants;
 using namespace usb::types;
+using namespace usb::core::internal;
 
 namespace usb::core
 {
-	deviceState_t usbState;
-	usbEP_t usbPacket;
-	bool usbSuspended;
-	ctrlState_t usbCtrlState;
-	uint8_t usbDeferalFlags;
-
-	std::array<usbEPStatus_t<const void>, endpointCount> epStatusControllerIn{};
-	std::array<usbEPStatus_t<void>, endpointCount> epStatusControllerOut{};
-
-	static std::array<std::array<handler_t, endpointCount - 1>, configsCount> inHandlers{};
-	static std::array<std::array<handler_t, endpointCount - 1>, configsCount> outHandlers{};
-
 	/*!
 	* Transmitting packets:
 	* Write data to endpoint TXFIFO register up to 4 bytes at a time,

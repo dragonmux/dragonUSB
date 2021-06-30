@@ -25,7 +25,7 @@ subdir(get_option('chip'))
 subdir('drivers')
 
 dragonUSBSrc = [
-	platformSrcs, drivers, 'device.cxx'
+	platformSrcs, drivers, 'core.cxx', 'device.cxx'
 ]
 
 buildDefs = [
