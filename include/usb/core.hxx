@@ -29,6 +29,8 @@ namespace usb::core
 	extern void handleIRQ() noexcept;
 	extern void attach() noexcept;
 	extern void detach() noexcept;
+	extern void address(uint8_t value) noexcept;
+	extern uint8_t address() noexcept;
 
 	extern void resetEPs(epReset_t what) noexcept;
 

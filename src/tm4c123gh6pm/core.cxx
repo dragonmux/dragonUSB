@@ -130,6 +130,14 @@ namespace usb::core
 		usb::device::activeConfig = 0;
 	}
 
+	void address(const uint8_t value) noexcept
+	{
+		usbCtrl.address = (usbCtrl.address & vals::usb::addressClrMask) |
+			(value & vals::usb::addressMask);
+	}
+
+	uint8_t address() noexcept { return usbCtrl.address & vals::usb::addressMask; }
+
 	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t &handler) noexcept
 	{
 		const auto endpoint{ep.endpoint()};
