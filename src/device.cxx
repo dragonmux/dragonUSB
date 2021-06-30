@@ -200,7 +200,7 @@ namespace usb::device
 			else
 				//  <SETUP[0]><IN[1]>
 				usbCtrlState = ctrlState_t::statusTX;
-			if (writeCtrlEP())
+			if (writeEP(0))
 			{
 				if (usbCtrlState == ctrlState_t::dataTX)
 					usbCtrlState = ctrlState_t::statusRX;
@@ -302,7 +302,7 @@ namespace usb::device
 		// If we're in the data phase
 		if (usbCtrlState == ctrlState_t::dataTX)
 		{
-			if (writeCtrlEP())
+			if (writeEP(0))
 			{
 				// If we now have all the data for the transaction..
 				//usbCtrlState = ctrlState_t::statusRX;

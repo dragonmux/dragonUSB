@@ -18,8 +18,6 @@ namespace usb::device::internal
 	extern void handleControllerInPacket() noexcept;
 	extern void handleControllerOutPacket() noexcept;
 	extern void handleSetupPacket() noexcept;
-
-	extern bool writeCtrlEP() noexcept;
 } // namespace usb::device::internal
 
 #endif /*USB_INTERNAL_DEVICE___HXX*/

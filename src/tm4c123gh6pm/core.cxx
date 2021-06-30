@@ -419,8 +419,6 @@ namespace usb::core
 	*/
 	bool writeEP(const uint8_t endpoint) noexcept
 	{
-		if (!endpoint)
-			return false;
 		auto &epStatus{epStatusControllerIn[endpoint]};
 		const auto sendCount{[&]() noexcept -> uint8_t
 		{
@@ -436,9 +434,16 @@ namespace usb::core
 		else
 			writeEPMultipart(endpoint, sendCount);
 		// Mark the FIFO contents as done with
-		usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrLTxUnderRun |
-			vals::usb::epStatusCtrlLStalled));
-		usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL |= vals::usb::epStatusCtrlLTxReady;
+		if (endpoint)
+		{
+			usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrLTxUnderRun |
+				vals::usb::epStatusCtrlLStalled));
+			usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL |= vals::usb::epStatusCtrlLTxReady;
+		}
+		else if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusTX)
+			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady;
+		else
+			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady | vals::usb::epStatusCtrlLDataEnd;
 		return !epStatus.transferCount;
 	}
 
