@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "usb/platform.hxx"
 #include "usb/internal/core.hxx"
+#include "usb/platforms/atxmega256a3u/core.hxx"
 #include "usb/device.hxx"
 #include <substrate/indexed_iterator>
 
@@ -18,7 +19,7 @@ namespace usb::core
 {
 	// These are organised EPxOut, EPxIn, etc
 	alignas(2) std::array<endpointCtrl_t, endpointCount> endpoints{};
-	std::array<std::array<uint8_t, usb::epBufferSize>, usb::endpointCount * 2> epBuffer{};
+	std::array<std::array<uint8_t, epBufferSize>, endpointCount * 2> epBuffer{};
 
 	void init() noexcept
 	{
@@ -26,7 +27,7 @@ namespace usb::core
 		USB.CTRLB &= ~vals::usb::ctrlBAttach;
 		USB.CTRLA = vals::usb::ctrlAUSBEnable | vals::usb::ctrlAModeFullSpeed | vals::usb::ctrlAMaxEP(2);
 
-		for (auto &[i, endpoint] : substrate::indexedIterator_t{endpoints})
+		for (auto [i, endpoint] : substrate::indexedIterator_t{endpoints})
 		{
 			endpoint.controllerOut.DATAPTR = reinterpret_cast<std::uintptr_t>(epBuffer[i << 1U].data());
 			endpoint.controllerOut.CNT = 0;
@@ -83,28 +84,28 @@ namespace usb::core
 
 	void resetEPs(const epReset_t what) noexcept
 	{
-		for (auto &[i, endpoint] : utility::indexedIterator_t{endpoints})
+		for (auto [i, endpoint] : substrate::indexedIterator_t{endpoints})
 		{
 			if (what == epReset_t::user && i == 0)
 				continue;
 
-			endpoint->controllerOut.CTRL |= vals::usb::usbEPCtrlItrDisable;
-			endpoint->controllerOut.CTRL &= ~vals::usb::usbEPCtrlStall;
+			endpoint.controllerOut.CTRL |= vals::usb::usbEPCtrlItrDisable;
+			endpoint.controllerOut.CTRL &= ~vals::usb::usbEPCtrlStall;
 			if (i != 0)
 			{
-				endpoint->controllerOut.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
-				endpoint->controllerIn.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
-				endpoint->controllerOut.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
-				endpoint->controllerOut.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
+				endpoint.controllerOut.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
+				endpoint.controllerIn.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
+				endpoint.controllerOut.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
+				endpoint.controllerOut.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
 					vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
 			}
 			else
-				endpoint->controllerOut.STATUS &= ~(vals::usb::usbEPStatusNACK0);
+				endpoint.controllerOut.STATUS &= ~(vals::usb::usbEPStatusNACK0);
 
-			endpoint->controllerIn.CTRL |= vals::usb::usbEPCtrlItrDisable;
-			endpoint->controllerIn.CTRL &= ~vals::usb::usbEPCtrlStall;
-			endpoint->controllerIn.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
-			endpoint->controllerIn.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
+			endpoint.controllerIn.CTRL |= vals::usb::usbEPCtrlItrDisable;
+			endpoint.controllerIn.CTRL &= ~vals::usb::usbEPCtrlStall;
+			endpoint.controllerIn.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
+			endpoint.controllerIn.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
 				vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
 		}
 
@@ -143,7 +144,7 @@ namespace usb::core
 	}
 
 	const void *sendData(const uint8_t ep, const void *const bufferPtr, const uint8_t length,
-		const uint8_t offset) noexcept
+		const uint8_t offset = 0) noexcept
 	{
 		auto *const inBuffer{static_cast<const uint8_t *>(bufferPtr)};
 		auto *const outBuffer{epBuffer[(ep << 1) + 1].data() + offset};
