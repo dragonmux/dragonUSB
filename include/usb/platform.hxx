@@ -5,6 +5,8 @@
 #if defined(TM4C123GH6PM)
 #include <tm4c123gh6pm/platform.hxx>
 #include <tm4c123gh6pm/constants.hxx>
+#elif defined(ATXMEGA256A3U)
+#include <avr/io.h>
 #endif
 
 #endif /*USB_PLATFORM___HXX*/
