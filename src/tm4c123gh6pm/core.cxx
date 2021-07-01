@@ -230,10 +230,10 @@ namespace usb::core
 
 	uint16_t readEPDataAvail(uint8_t endpoint) noexcept
 	{
-		if (endpoint)
-			return usbCtrl.epCtrls[endpoint - 1U].rxCount;
-		else
+		if (endpoint == 0U)
 			return usbCtrl.ep0Ctrl.rxCount;
+		else
+			return usbCtrl.epCtrls[endpoint - 1U].rxCount;
 	}
 
 	/*!
@@ -242,8 +242,6 @@ namespace usb::core
 	*/
 	bool readEP(const uint8_t endpoint) noexcept
 	{
-		if (!endpoint)
-			return false;
 		auto &epStatus{epStatusControllerOut[endpoint]};
 		auto readCount{readEPDataAvail(endpoint)};
 		// Bounds sanity and then adjust how much is left to transfer
