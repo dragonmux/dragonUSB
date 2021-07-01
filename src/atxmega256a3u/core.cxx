@@ -17,9 +17,12 @@ using namespace usb::core::internal;
 
 namespace usb::core
 {
-	// These are organised EPxOut, EPxIn, etc
-	alignas(2) std::array<endpointCtrl_t, endpointCount> endpoints{};
-	std::array<std::array<uint8_t, epBufferSize>, endpointCount * 2> epBuffer{};
+	namespace internal
+	{
+		// These are organised EPxOut, EPxIn, etc
+		alignas(2) std::array<endpointCtrl_t, endpointCount> endpoints{};
+		std::array<std::array<uint8_t, epBufferSize>, endpointCount * 2> epBuffer{};
+	} // namespace internal
 
 	void init() noexcept
 	{
