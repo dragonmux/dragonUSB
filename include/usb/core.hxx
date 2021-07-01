@@ -34,6 +34,7 @@ namespace usb::core
 	extern bool writeEPBusy(uint8_t endpoint) noexcept;
 	extern void stallEP(uint8_t endpoint) noexcept;
 	extern uint16_t readEPDataAvail(uint8_t endpoint) noexcept;
+	extern void pauseWriteEP(uint8_t endpoint) noexcept;
 
 	extern void registerHandler(usb::types::usbEP_t ep, uint8_t config,
 		const usb::types::handler_t &handler) noexcept;
