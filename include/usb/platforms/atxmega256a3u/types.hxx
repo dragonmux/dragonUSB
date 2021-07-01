@@ -166,7 +166,8 @@ public:
 
 namespace usb::descriptors
 {
-	usbMultiPartTable_t &usbMultiPartTable_t::operator =(const flash_t<usbMultiPartTable_t> &data) noexcept
+	static inline usbMultiPartTable_t &
+		usbMultiPartTable_t::operator =(const flash_t<usbMultiPartTable_t> &data) noexcept
 	{
 		*this = *data;
 		return *this;
