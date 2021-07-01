@@ -4,8 +4,8 @@
 
 #include <cstdint>
 #include <tuple>
-
-namespace usb::descriptors { struct usbMultiPartTable_t; }
+#include "usb/platform.hxx"
+#include "usb/platforms/types.hxx"
 
 namespace usb::types
 {
@@ -43,12 +43,6 @@ namespace usb::types
 		zeroLength,
 		unhandled,
 		stall
-	};
-
-	enum class endpointDir_t : uint8_t
-	{
-		controllerOut = 0x00U,
-		controllerIn = 0x80U
 	};
 
 	struct usbEP_t final

@@ -8,6 +8,7 @@
 #elif defined(ATXMEGA256A3U)
 #include <avr/io.h>
 #include "usb/platforms/atxmega256a3u/constants.hxx"
+#define USB_MEM_SEGMENTED
 #endif
 
 #endif /*USB_PLATFORM___HXX*/

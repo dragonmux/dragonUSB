@@ -325,44 +325,12 @@ namespace usb::descriptors
 			uint16_t dfuVersion;
 		};
 	} // namespace dfu
+} // namespace usb::descriptors
 
-	struct usbMultiPartDesc_t
-	{
-		uint8_t length;
-		const void *descriptor;
-	};
+#include "usb/platforms/types.hxx"
 
-	struct usbMultiPartTable_t
-	{
-	private:
-		const usbMultiPartDesc_t *_begin;
-		const usbMultiPartDesc_t *_end;
-
-	public:
-		constexpr usbMultiPartTable_t(const usbMultiPartDesc_t *const begin,
-			const usbMultiPartDesc_t *const end) noexcept : _begin{begin}, _end{end} { }
-		[[nodiscard]] constexpr auto begin() const noexcept { return _begin; }
-		[[nodiscard]] constexpr auto end() const noexcept { return _end; }
-		[[nodiscard]] constexpr auto count() const noexcept { return _end - _begin; }
-
-		[[nodiscard]] constexpr auto &part(const std::size_t index) const noexcept
-		{
-			if (_begin + index >= _end)
-				return *_end;
-			return _begin[index];
-		}
-		constexpr auto &operator [](const std::size_t index) const noexcept { return part(index); }
-
-		[[nodiscard]] constexpr auto totalLength() const noexcept
-		{
-			// TODO: Convert to std::accumulate() later.
-			std::size_t count{};
-			for (const auto &descriptor : *this)
-				count += descriptor.length;
-			return count;
-		}
-	};
-
+namespace usb::descriptors
+{
 	struct [[gnu::packed]] usbStringDesc_t
 	{
 		uint8_t length;
@@ -398,10 +366,8 @@ namespace usb::descriptors
 	inline namespace constants { using namespace usb::constants; }
 
 	extern const usbDeviceDescriptor_t deviceDescriptor;
-	extern const std::array<usbMultiPartTable_t, configsCount> configDescriptors;
 	extern const std::array<usbInterfaceDescriptor_t, interfaceDescriptorCount> interfaceDescriptors;
 	extern const std::array<usbEndpointDescriptor_t, endpointDescriptorCount> endpointDescriptors;
-	extern const std::array<usbMultiPartTable_t, stringCount> strings;
 } // namespace usb::descriptors
 
 #endif /*USB_DESCRIPTORS___HXX*/
