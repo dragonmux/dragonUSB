@@ -252,13 +252,16 @@ namespace usb::core
 		epStatus.transferCount -= readCount;
 		epStatus.memBuffer = recvData(endpoint, static_cast<uint8_t *>(epStatus.memBuffer), uint8_t(readCount));
 		// Mark the FIFO contents as done with
-		if (endpoint)
-			usbCtrl.epCtrls[endpoint - 1].rxStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrlLRxReady |
-				vals::usb::epStatusCtrlLStalled));
-		else if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusRX)
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
+		if (endpoint == 0U)
+		{
+			if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusRX)
+				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
+			else
+				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
+		}
 		else
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
+			usbCtrl.epCtrls[endpoint - 1U].rxStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrlLRxReady |
+				vals::usb::epStatusCtrlLStalled));
 		return !epStatus.transferCount;
 	}
 
@@ -351,17 +354,21 @@ namespace usb::core
 			epStatus.memBuffer = sendData(endpoint, static_cast<const uint8_t *>(epStatus.memBuffer), sendCount);
 		else
 			writeEPMultipart(endpoint, sendCount);
+
 		// Mark the FIFO contents as done with
-		if (endpoint)
+		if (endpoint == 0U)
 		{
-			usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrLTxUnderRun |
-				vals::usb::epStatusCtrlLStalled));
-			usbCtrl.epCtrls[endpoint - 1].txStatusCtrlL |= vals::usb::epStatusCtrlLTxReady;
+			if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusTX)
+				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady;
+			else
+				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady | vals::usb::epStatusCtrlLDataEnd;
 		}
-		else if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusTX)
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady;
 		else
-			usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady | vals::usb::epStatusCtrlLDataEnd;
+		{
+			usbCtrl.epCtrls[endpoint - 1U].txStatusCtrlL &= uint8_t(~(vals::usb::epStatusCtrLTxUnderRun |
+				vals::usb::epStatusCtrlLStalled));
+			usbCtrl.epCtrls[endpoint - 1U].txStatusCtrlL |= vals::usb::epStatusCtrlLTxReady;
+		}
 		return !epStatus.transferCount;
 	}
 
@@ -403,7 +410,7 @@ namespace usb::core
 				else
 					usbPacket.dir(endpointDir_t::controllerIn);
 
-				if (endpoint == 0)
+				if (endpoint == 0U)
 					usb::device::handleControlPacket();
 				else
 				{
