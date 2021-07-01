@@ -7,6 +7,7 @@
 #include <tm4c123gh6pm/constants.hxx>
 #elif defined(ATXMEGA256A3U)
 #include <avr/io.h>
+#include "usb/platforms/atxmega256a3u/constants.hxx"
 #endif
 
 #endif /*USB_PLATFORM___HXX*/

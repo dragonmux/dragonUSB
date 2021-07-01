@@ -1,22 +1,40 @@
 # SPDX-License-Identifier: BSD-3-Clause
-substrate = dependency(
+substrate = subproject(
 	'substrate',
 	required: true,
 	version: '>=0.0.1',
-	fallback: ['substrate', 'substrate_dep'],
 	default_options: [
 		'build_tests=false',
 		'build_library=false'
 	]
-).partial_dependency(compile_args: true, includes: true)
+).get_variable(
+	'substrate_dep'
+).partial_dependency(
+	compile_args: true,
+	includes: true
+)
 
-if get_option('chip').startswith('tm4c')
-	platform = dependency(
+chip = get_option('chip')
+
+if chip.startswith('tm4c')
+	platform = subproject(
 		'dragonTI',
 		required: true,
 		version: '>=0.0.1',
-		fallback: ['dragonTI', 'dragonTI_dep']
-	).partial_dependency(compile_args: true, includes: true)
+	).get_variable(
+		'dragonTI_dep'
+	).partial_dependency(
+		compile_args: true,
+		includes: true
+	)
+elif chip.startswith('atxmega')
+	platform = subproject(
+		'dragonAVR',
+		required: true,
+		version: '>=0.0.1',
+	).get_variable(
+		'dragonAVR_dep'
+	)
 else
 	error('Must define the target device to build the stack for')
 endif
