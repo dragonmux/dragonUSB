@@ -56,6 +56,8 @@ buildDefs = [
 	'-DUSB_STRINGS=@0@'.format(get_option('strings'))
 ]
 
+allowPIC = cxx.has_argument('-fPIC')
+
 dragonUSB = static_library(
 	'dragonUSB',
 	dragonUSBSrc,
@@ -63,5 +65,6 @@ dragonUSB = static_library(
 	include_directories: [include_directories('../include')],
 	dependencies: [platform, substrate],
 	gnu_symbol_visibility: 'inlineshidden',
-	build_by_default: true
+	build_by_default: true,
+	pic: allowPIC
 )

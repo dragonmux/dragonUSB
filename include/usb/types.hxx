@@ -124,7 +124,7 @@ namespace usb::types
 
 		[[nodiscard]] bool isMultiPart() const noexcept { return value & 0x08U; }
 
-		void memoryType(memory_t type) noexcept
+		void memoryType([[maybe_unused]] memory_t type) noexcept
 		{
 #ifdef USB_MEM_SEGMENTED
 			value &= 0xEFU;
