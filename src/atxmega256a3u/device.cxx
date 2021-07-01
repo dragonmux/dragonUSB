@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "usb/platform.hxx"
-#include "usb/core.hxx"
-#include "usb/device.hxx"
+#include "usb/internal/core.hxx"
+#include "usb/platforms/atxmega256a3u/core.hxx"
 #include "usb/internal/device.hxx"
 
 using namespace usb::constants;
 using namespace usb::types;
 using namespace usb::core;
+using namespace usb::core::internal;
 using namespace usb::descriptors;
 using namespace usb::device::internal;
 
@@ -82,7 +83,7 @@ namespace usb::device
 			const auto descriptors{*configDescriptors[activeConfig - 1U]};
 			for (const auto &part : descriptors)
 			{
-				flash_t<char *> descriptor{static_cast<const std::byte *>(part.descriptor)};
+				flash_t<char *> descriptor{static_cast<const char *>(part.descriptor)};
 				usbDescriptor_t type{static_cast<usbDescriptor_t>(descriptor[1])};
 				if (type == usbDescriptor_t::endpoint)
 				{
