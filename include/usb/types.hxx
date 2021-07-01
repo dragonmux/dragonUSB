@@ -71,6 +71,12 @@ namespace usb::types
 		[[nodiscard]] endpointDir_t dir() const noexcept { return static_cast<endpointDir_t>(value & 0x80U); }
 	};
 
+	enum class memory_t
+	{
+		sram,
+		flash
+	};
+
 	template<typename buffer_t> struct usbEPStatus_t final
 	{
 	private:
@@ -82,7 +88,7 @@ namespace usb::types
 		uint16_t transferCount{};
 		// Multi-part fields
 		uint8_t partNumber{};
-		const usb::descriptors::usbMultiPartTable_t *partsData{nullptr};
+		usb::descriptors::usbMultiPartTable_t partsData{};
 
 		usbEPStatus_t() = default;
 
@@ -117,10 +123,27 @@ namespace usb::types
 		}
 
 		[[nodiscard]] bool isMultiPart() const noexcept { return value & 0x08U; }
+
+		void memoryType(memory_t type) noexcept
+		{
+#ifdef USB_MEM_SEGMENTED
+			value &= 0xEFU;
+			value |= uint8_t(type == memory_t::flash ? 0x10U : 0x00U);
+#endif
+		}
+
+		memory_t memoryType() const noexcept { return (value & 0x10U) ? memory_t::flash : memory_t::sram; }
 		void resetStatus() noexcept { value = 0; }
 	};
 
-	using answer_t = std::tuple<response_t, const void *, std::uint16_t>;
+	struct answer_t : public std::tuple<response_t, const void *, std::uint16_t, memory_t>
+	{
+		using tuple_t = std::tuple<response_t, const void *, std::uint16_t, memory_t>;
+		answer_t(response_t response, const void *data, std::uint16_t length) :
+			tuple_t{response, data, length, memory_t::sram} { }
+		answer_t(response_t response, const void *data, std::uint16_t length, memory_t memoryType) :
+			tuple_t{response, data, length, memoryType} { }
+	};
 } // namespace usb::types
 
 #endif /*USB_TYPES___HXX*/

@@ -25,7 +25,11 @@ namespace usb::device
 
 	static const usbStringDesc_t stringLangIDDescriptor{{u"\x0904", 1}};
 	static const auto stringLangIDParts{stringLangIDDescriptor.asParts()};
+#ifndef USB_MEM_SEGMENTED
 	static const usbMultiPartTable_t stringLangID{stringLangIDParts.begin(), stringLangIDParts.end()};
+#else
+	static const flash_t<usbMultiPartTable_t> stringLangID{{stringLangIDParts.begin(), stringLangIDParts.end()}};
+#endif
 
 	answer_t handleGetDescriptor() noexcept
 	{
@@ -38,7 +42,7 @@ namespace usb::device
 		{
 			// Handle device descriptor requests
 			case usbDescriptor_t::device:
-				return {response_t::data, &deviceDescriptor, deviceDescriptor.length};
+				return {response_t::data, &deviceDescriptor, deviceDescriptor.length, memory_t::flash};
 			case usbDescriptor_t::deviceQualifier:
 				return {response_t::stall, nullptr, 0};
 			// Handle configuration descriptor requests
@@ -52,8 +56,8 @@ namespace usb::device
 				const auto &configDescriptor{configDescriptors[descriptor.index]};
 				epStatusControllerIn[0].isMultiPart(true);
 				epStatusControllerIn[0].partNumber = 0;
-				epStatusControllerIn[0].partsData = &configDescriptor;
-				return {response_t::data, nullptr, configDescriptor.totalLength()};
+				epStatusControllerIn[0].partsData = configDescriptor;
+				return {response_t::data, nullptr, configDescriptor.totalLength(), memory_t::flash};
 			}
 			// Handle interface descriptor requests
 			case usbDescriptor_t::interface:
@@ -61,7 +65,7 @@ namespace usb::device
 				if (descriptor.index >= interfaceDescriptorCount)
 					break;
 				const auto &interfaceDescriptor{interfaceDescriptors[descriptor.index]};
-				return {response_t::data, &interfaceDescriptor, interfaceDescriptor.length};
+				return {response_t::data, &interfaceDescriptor, interfaceDescriptor.length, memory_t::flash};
 			}
 			// Handle endpoint descriptor requests
 			case usbDescriptor_t::endpoint:
@@ -69,7 +73,7 @@ namespace usb::device
 				if (descriptor.index >= endpointDescriptorCount)
 					break;
 				const auto &endpointDescriptor{endpointDescriptors[descriptor.index]};
-				return {response_t::data, &endpointDescriptor, endpointDescriptor.length};
+				return {response_t::data, &endpointDescriptor, endpointDescriptor.length, memory_t::flash};
 			}
 			// Handle string requests
 			case usbDescriptor_t::string:
@@ -79,10 +83,10 @@ namespace usb::device
 				epStatusControllerIn[0].isMultiPart(true);
 				epStatusControllerIn[0].partNumber = 0;
 				if (descriptor.index)
-					epStatusControllerIn[0].partsData = &strings[descriptor.index - 1U];
+					epStatusControllerIn[0].partsData = strings[descriptor.index - 1U];
 				else
-					epStatusControllerIn[0].partsData = &stringLangID;
-				return {response_t::data, nullptr, epStatusControllerIn[0].partsData->totalLength()};
+					epStatusControllerIn[0].partsData = stringLangID;
+				return {response_t::data, nullptr, epStatusControllerIn[0].partsData.totalLength(), memory_t::flash};
 			}
 			default:
 				break;
@@ -238,20 +242,22 @@ namespace usb::device
 		response_t response{response_t::unhandled};
 		const void *data{nullptr};
 		std::uint16_t size{0};
+		memory_t memoryType{memory_t::sram};
 
-		std::tie(response, data, size) = handleStandardRequest();
+		std::tie(response, data, size, memoryType) = handleStandardRequest();
 		if (response == response_t::unhandled && activeConfig)
 		{
 			for (const auto &[i, handler] : substrate::indexedIterator_t{controlHandlers[activeConfig - 1U]})
 			{
 				if (handler)
-					std::tie(response, data, size) = handler(i + 1U, packet);
+					std::tie(response, data, size, memoryType) = handler(i + 1U, packet);
 			}
 		}
 
 		epStatusControllerIn[0].stall(response == response_t::stall || response == response_t::unhandled);
 		epStatusControllerIn[0].needsArming(response == response_t::data || response == response_t::zeroLength);
 		epStatusControllerIn[0].memBuffer = data;
+		epStatusControllerIn[0].memoryType(memoryType);
 		const auto transferCount{response == response_t::zeroLength ? uint16_t(0U) : size};
 		epStatusControllerIn[0].transferCount = std::min(transferCount, packet.length);
 		// If the response is whacko, don't do the stupid thing
