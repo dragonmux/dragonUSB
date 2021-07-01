@@ -88,6 +88,9 @@ namespace usb::core
 		usb::device::activeConfig = 0;
 	}
 
+	void address(const uint8_t value) noexcept { USB.ADDR = value & vals::usb::addressMask; }
+	uint8_t address() noexcept { return USB.ADDR &= ~vals::usb::addressMask; }
+
 	void reset()
 	{
 		resetEPs(epReset_t::all);
@@ -196,6 +199,9 @@ namespace usb::core
 		return outBuffer + length;
 	}
 
+	uint16_t readEPDataAvail(const uint8_t endpoint) noexcept
+		{ return endpoints[endpoint].controllerOut.CNT; }
+
 	/*!
 	 * @returns true when the all the data to be read has been retreived,
 	 * false if there is more left to fetch.
@@ -270,6 +276,12 @@ namespace usb::core
 		epCtrl.CNT = sendCount;
 		epCtrl.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0);
 		return !epStatus.transferCount;
+	}
+
+	void stallEP(const uint8_t endpoint) noexcept
+	{
+		auto &epCtrl{endpoints[endpoint].controllerIn};
+		epCtrl.CTRL |= vals::usb::usbEPCtrlStall;
 	}
 
 	void pauseWriteEP(const uint8_t ep) noexcept
