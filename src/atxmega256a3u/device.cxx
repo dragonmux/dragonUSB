@@ -66,6 +66,8 @@ namespace usb::device
 		epCtrl.CTRL = endpoint::mapType(endpoint.endpointType) | endpoint::mapMaxSize(endpoint.maxPacketSize);
 	}
 
+	namespace internal
+	{
 	bool handleSetConfiguration() noexcept
 	{
 		usb::core::resetEPs(epReset_t::user);
@@ -96,5 +98,25 @@ namespace usb::device
 		else
 			return false;
 		return true;
+	}
+	} // namespace internal
+
+	void handleControlPacket() noexcept
+	{
+		// If we received a packet..
+		if (usbPacket.dir() == endpointDir_t::controllerOut)
+		{
+			const auto status{endpoints[0].controllerOut.STATUS};
+			if (status & vals::usb::usbEPStatusSetupComplete)
+			{
+				handleSetupPacket();
+				USB.INTFLAGSBCLR = vals::usb::itrStatusSetup;
+			}
+			else
+				handleControllerOutPacket();
+		}
+		else
+			handleControllerInPacket();
+		endpoints[0].controllerIn.STATUS &= ~vals::usb::usbEPStatusIOComplete;
 	}
 } // namespace usb::device
