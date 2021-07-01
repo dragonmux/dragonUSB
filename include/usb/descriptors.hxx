@@ -100,7 +100,7 @@ namespace usb::descriptors
 		sessionRequestProto = 0x01U
 	};
 
-#if __GNUC__
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
@@ -115,7 +115,7 @@ namespace usb::descriptors
 		usbConfigAttr_t attributes;
 		uint8_t maxPower;
 	};
-#if __GNUC__
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
@@ -146,7 +146,7 @@ namespace usb::descriptors
 	constexpr inline uint8_t endpointAddress(const usbEndpointDir_t dir, const uint8_t number) noexcept
 		{ return uint8_t(dir) | (number & endpointDirMask); }
 
-#if __GNUC__
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
 #endif
@@ -159,7 +159,7 @@ namespace usb::descriptors
 		uint16_t maxPacketSize;
 		uint8_t interval;
 	};
-#if __GNUC__
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
@@ -254,6 +254,10 @@ namespace usb::descriptors
 			turkishF = 35
 		};
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
 		struct [[gnu::packed]] hidDescriptor_t final
 		{
 			uint8_t length;
@@ -268,6 +272,9 @@ namespace usb::descriptors
 			usbDescriptor_t descriptorType;
 			uint16_t length;
 		};
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 		enum struct descriptorType_t : uint8_t
 		{
