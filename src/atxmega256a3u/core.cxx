@@ -52,20 +52,40 @@ namespace usb::core
 		}
 
 		USB.EPPTR = reinterpret_cast<std::uintptr_t>(endpoints.data());
-		// Reset all USB interrupts
-		USB.INTCTRLA &= vals::usb::intCtrlAClearMask;
-		USB.INTCTRLB &= vals::usb::intCtrlBClearMask;
-		// Ensure the device address is 0
-		USB.ADDR &= ~vals::usb::addressMask;
-
-		// Enable the USB reset interrupt
-		USB.INTCTRLA |= vals::usb::intCtrlAEnableBusEvent | USB_INTLVL_LO_gc;
 
 		// Initialise the state machine
 		usbState = deviceState_t::detached;
 		usbCtrlState = ctrlState_t::idle;
 		usbDeferalFlags = 0;
+	}
+
+	void attach() noexcept
+	{
+		// Reset all USB interrupts
+		USB.INTCTRLA &= vals::usb::intCtrlAClearMask;
+		USB.INTCTRLB &= vals::usb::intCtrlBClearMask;
+
+		// Ensure the device address is 0
+		USB.ADDR &= ~vals::usb::addressMask;
+		// Ensure we're in the unconfigured configuration
+		usb::device::activeConfig = 0;
+		// Enable the USB reset interrupt
+		USB.INTCTRLA |= vals::usb::intCtrlAEnableBusEvent | USB_INTLVL_LO_gc;
+		// Attach to the bus
 		USB.CTRLB = vals::usb::ctrlBAttach;
+	}
+
+	void detach() noexcept
+	{
+		// Detach from the bus
+		USB.CTRLB &= ~vals::usb::ctrlBAttach;
+		// Reset all USB interrupts
+		USB.INTCTRLA &= vals::usb::intCtrlAClearMask;
+		USB.INTCTRLB &= vals::usb::intCtrlBClearMask;
+		// Ensure that the current configuration is torn down
+		deinitHandlers();
+		// Switch to the unconfigured configuration
+		usb::device::activeConfig = 0;
 	}
 
 	void reset()
