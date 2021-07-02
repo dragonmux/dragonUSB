@@ -293,6 +293,21 @@ namespace usb::core
 		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
 	}
 
+	uint8_t statusEP(const uint8_t endpoint, const endpointDir_t dir) noexcept
+	{
+		auto &epCtrl
+		{
+			[dir](endpointCtrl_t &endpointCtrl) -> USB_EP_t &
+			{
+				if (dir == endpointDir_t::controllerIn)
+					return endpointCtrl.controllerIn;
+				else
+					return endpointCtrl.controllerOut;
+			}(endpoints[endpoint])
+		};
+		return (epCtrl.STATUS & vals::usb::usbEPStatusStall) ? 1 : 0;
+	}
+
 	template<endpointDir_t direction> void handlePacket(const uint8_t endpoint)
 	{
 		const auto status{[=]()
