@@ -103,6 +103,7 @@ namespace usb::descriptors
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wpacked"
 #endif
 	struct [[gnu::packed]] usbConfigDescriptor_t
 	{
@@ -149,6 +150,7 @@ namespace usb::descriptors
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wpacked"
 #endif
 	struct [[gnu::packed]] usbEndpointDescriptor_t
 	{
@@ -257,6 +259,7 @@ namespace usb::descriptors
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wpacked"
 #endif
 		struct [[gnu::packed]] hidDescriptor_t final
 		{
