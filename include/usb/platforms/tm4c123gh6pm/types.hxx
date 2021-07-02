@@ -31,7 +31,7 @@ namespace usb::descriptors
 		[[nodiscard]] constexpr auto totalLength() const noexcept
 		{
 			// TODO: Convert to std::accumulate() later.
-			std::size_t count{};
+			std::uint16_t count{};
 			for (const auto &descriptor : *this)
 				count += descriptor.length;
 			return count;

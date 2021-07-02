@@ -228,7 +228,7 @@ namespace usb::core
 		return buffer + length;
 	}
 
-	uint16_t readEPDataAvail(uint8_t endpoint) noexcept
+	uint16_t readEPDataAvail(const uint8_t endpoint) noexcept
 	{
 		if (endpoint == 0U)
 			return usbCtrl.ep0Ctrl.rxCount;
