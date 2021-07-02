@@ -6,7 +6,7 @@
 
 namespace usb::descriptors
 {
-	struct usbMultiPartTable_t
+	struct usbMultiPartTable_t final
 	{
 	private:
 		const usbMultiPartDesc_t *_begin{nullptr};

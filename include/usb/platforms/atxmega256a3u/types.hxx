@@ -77,7 +77,7 @@ public:
 
 namespace usb::descriptors
 {
-	struct usbMultiPartTable_t
+	struct usbMultiPartTable_t final
 	{
 	private:
 		flash_t<usbMultiPartDesc_t> _begin{nullptr};
@@ -89,6 +89,7 @@ namespace usb::descriptors
 		constexpr usbMultiPartTable_t(usbMultiPartTable_t &&) noexcept = default;
 		constexpr usbMultiPartTable_t(const usbMultiPartDesc_t *const begin,
 			const usbMultiPartDesc_t *const end) noexcept : _begin{begin}, _end{end} { }
+		~usbMultiPartTable_t() noexcept = default;
 		[[nodiscard]] constexpr auto begin() const noexcept { return _begin; }
 		[[nodiscard]] constexpr auto end() const noexcept { return _end; }
 		[[nodiscard]] constexpr auto count() const noexcept { return _end - _begin; }
@@ -105,7 +106,7 @@ namespace usb::descriptors
 		{
 			// TODO: Convert to std::accumulate() later.
 			std::uint16_t count{};
-			for (const auto &descriptor : *this)
+			for (const auto descriptor : *this)
 				count += descriptor.length;
 			return count;
 		}
@@ -125,7 +126,7 @@ private:
 public:
 	constexpr flash_t(const T value) noexcept : value_{value} { }
 
-	T operator *() const noexcept
+	operator T() const noexcept
 	{
 		T result{};
 		const auto resultAddr{reinterpret_cast<uint32_t>(&result)};
@@ -157,9 +158,11 @@ public:
 		return result;
 	}
 
+	T operator *() const noexcept { return T{*this}; }
+
 	[[nodiscard]] auto totalLength() const noexcept
 	{
-		const auto table{**this};
+		const T table{*this};
 		return table.totalLength();
 	}
 };
