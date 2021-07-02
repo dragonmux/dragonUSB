@@ -635,7 +635,6 @@ namespace usb::descriptors
 		constexpr usbStringDesc_t(const std::u16string_view data) noexcept :
 			length{uint8_t(baseLength() + (data.length() * 2))}, string{data.data()} { }
 
-		static_assert(baseLength() == 2);
 		[[nodiscard]] constexpr static uint8_t baseLength() noexcept
 			{ return sizeof(usbStringDesc_t) - sizeof(char16_t *); }
 		[[nodiscard]] constexpr uint8_t stringLength() const noexcept
@@ -657,6 +656,7 @@ namespace usb::descriptors
 			return parts;
 		}
 	};
+	static_assert(usbStringDesc_t::baseLength() == 2U);
 
 	inline namespace constants { using namespace usb::constants; }
 
