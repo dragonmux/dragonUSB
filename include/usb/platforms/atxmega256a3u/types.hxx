@@ -172,7 +172,7 @@ namespace usb::descriptors
 	inline usbMultiPartTable_t &
 		usbMultiPartTable_t::operator =(const flash_t<usbMultiPartTable_t> &data) noexcept
 	{
-		*this = *data;
+		*this = usbMultiPartTable_t{data};
 		return *this;
 	}
 
