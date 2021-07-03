@@ -53,7 +53,7 @@ namespace usb::device
 	{
 		using namespace usb::descriptors;
 		if (packet.requestType.dir() == endpointDir_t::controllerOut)
-			return {response_t::unhandled, nullptr, 0};
+			return {response_t::stall, nullptr, 0};
 		const auto descriptor = packet.value.asDescriptor();
 
 		switch (descriptor.type)
@@ -114,6 +114,9 @@ namespace usb::device
 
 	answer_t handleGetStatus() noexcept
 	{
+		if (packet.requestType.dir() == endpointDir_t::controllerOut)
+			return {response_t::stall, nullptr, 0};
+
 		switch (packet.requestType.recipient())
 		{
 		case setupPacket::recipient_t::device:
@@ -138,6 +141,8 @@ namespace usb::device
 		switch (packet.request)
 		{
 			case request_t::setAddress:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
 				usbState = deviceState_t::addressing;
 				setupCallback = address;
 				return {response_t::zeroLength, nullptr, 0};
@@ -147,22 +152,30 @@ namespace usb::device
 			case request_t::getDescriptor:
 				return handleGetDescriptor();
 			case request_t::setConfiguration:
-				if (handleSetConfiguration())
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
+				else if (handleSetConfiguration())
 					// Acknowledge the request.
 					return {response_t::zeroLength, nullptr, 0};
 				// Bad request? Stall.
 				return {response_t::stall, nullptr, 0};
 			case request_t::getConfiguration:
+				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+					return {response_t::stall, nullptr, 0};
 				return {response_t::data, &activeConfig, 1};
 			case request_t::getStatus:
 				return handleGetStatus();
 			case request_t::getInterface:
-				if (packet.index < interfaceCount && packet.length == 1 && !packet.value && activeConfig)
+				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+					return {response_t::stall, nullptr, 0};
+				else if (packet.index < interfaceCount && packet.length == 1 && !packet.value && activeConfig)
 					return {response_t::data, &alternateModes[activeConfig - 1U][packet.index], 1};
 				return {response_t::stall, nullptr, 0};
 			case request_t::setInterface:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
 				// If the interface is valid and we're configured
-				if (packet.index < interfaceCount && !packet.length && packet.value < 0x0100U && activeConfig)
+				else if (packet.index < interfaceCount && !packet.length && packet.value < 0x0100U && activeConfig)
 				{
 					alternateModes[activeConfig - 1U][packet.index] = uint8_t(packet.value);
 					// Acknowledge the request.
@@ -267,7 +280,11 @@ namespace usb::device
 			for (const auto &[i, handler] : substrate::indexedIterator_t{controlHandlers[activeConfig - 1U]})
 			{
 				if (handler)
+				{
 					std::tie(response, data, size, memoryType) = handler(i);
+					if (response != response_t::unhandled)
+						break;
+				}
 			}
 		}
 
