@@ -18,6 +18,8 @@ namespace usb::core
 		user
 	};
 
+	using sofHandler_t = void (*)();
+
 	extern void init() noexcept;
 	extern void handleIRQ() noexcept;
 	extern void attach() noexcept;
@@ -41,6 +43,9 @@ namespace usb::core
 	extern void initHandlers() noexcept;
 	extern void deinitHandlers() noexcept;
 	extern usb::types::handler_t handlerFor(usb::types::usbEP_t ep, uint8_t config) noexcept;
+
+	extern void registerSOFHandler(uint8_t interface, sofHandler_t handler) noexcept;
+	extern void unregsiterSOFHandler(uint8_t interface) noexcept;
 } // namespace usb::core
 
 #endif /*USB_CORE___HXX*/

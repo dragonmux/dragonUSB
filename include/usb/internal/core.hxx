@@ -8,6 +8,7 @@ namespace usb::core::internal
 {
 	using usb::types::handler_t;
 	using usb::constants::configsCount;
+	using usb::constants::interfaceCount;
 
 	extern usb::types::deviceState_t usbState;
 	extern usb::types::usbEP_t usbPacket;
@@ -17,6 +18,7 @@ namespace usb::core::internal
 
 	extern std::array<std::array<handler_t, endpointCount - 1U>, configsCount> inHandlers;
 	extern std::array<std::array<handler_t, endpointCount - 1U>, configsCount> outHandlers;
+	extern std::array<sofHandler_t, interfaceCount> sofHandlers;
 } // namespace usb::core::internal
 
 #endif /*USB_INTERNAL_CORE___HXX*/

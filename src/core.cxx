@@ -20,6 +20,7 @@ namespace usb::core
 
 		std::array<std::array<handler_t, endpointCount - 1U>, configsCount> inHandlers{};
 		std::array<std::array<handler_t, endpointCount - 1U>, configsCount> outHandlers{};
+		std::array<sofHandler_t, interfaceCount> sofHandlers{};
 	} // namespace internal
 
 	std::array<usbEPStatus_t<const void>, endpointCount> epStatusControllerIn{};
@@ -93,5 +94,19 @@ namespace usb::core
 			return inHandlers[config][endpoint - 1U];
 		else
 			return outHandlers[config][endpoint - 1U];
+	}
+
+	void registerSOFHandler(uint8_t interface, sofHandler_t handler) noexcept
+	{
+		if (interface >= interfaceCount)
+			return;
+		sofHandlers[interface] = handler;
+	}
+
+	void unregsiterSOFHandler(uint8_t interface) noexcept
+	{
+		if (interface >= interfaceCount)
+			return;
+		sofHandlers[interface] = nullptr;
 	}
 } // namespace usb::core
