@@ -19,6 +19,14 @@ namespace usb::dfu
 		config.status = dfuStatus_t::ok;
 	}
 
+	void detached(const bool state) noexcept
+	{
+		if (state)
+			config.state = dfuState_t::dfuIdle;
+		else
+			config.state = dfuState_t::applicationIdle;
+	}
+
 	[[noreturn]] static void detach()
 	{
 		usb::core::detach();
