@@ -69,7 +69,7 @@ namespace usb::device
 
 		if (activeConfig == 0)
 			usbState = deviceState_t::addressed;
-		else if (activeConfig <= configsCount)
+		else
 		{
 			// EP0 consumes the first 256 bytes of USB RAM.
 			uint16_t startAddress{256};
@@ -91,8 +91,6 @@ namespace usb::device
 			}
 			usb::core::initHandlers();
 		}
-		else
-			return false;
 		return true;
 	}
 	} // namespace internal
