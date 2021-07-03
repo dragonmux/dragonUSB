@@ -18,10 +18,20 @@ namespace usb::dfu
 
 	static_assert(sizeof(config_t) == 6);
 
-	static void init()
+	static void tick() noexcept;
+
+	static void init() noexcept
 	{
 		config.state = dfuState_t::applicationIdle;
 		config.status = dfuStatus_t::ok;
+	}
+
+	static void handleSetInterface()
+	{
+		if (packet.value >= zones.size())
+			return;
+
+		registerSOFHandler(packet.index, tick);
 	}
 
 	void detached(const bool state) noexcept
@@ -91,11 +101,16 @@ namespace usb::dfu
 		return {response_t::stall, nullptr, 0};
 	}
 
+	void tick() noexcept
+	{
+	}
+
 	void registerHandlers(const substrate::span<zone_t> flashZones,
 		const uint8_t interface, const uint8_t config) noexcept
 	{
 		init();
 		zones = flashZones;
+		usb::device::registerAltModeHandler(interface, config, handleSetInterface);
 		usb::device::registerHandler(interface, config, handleDFURequest);
 	}
 } // namespace usb::dfu
