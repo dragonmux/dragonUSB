@@ -658,6 +658,24 @@ namespace usb::descriptors
 	};
 	static_assert(usbStringDesc_t::baseLength() == 2U);
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wpacked"
+#endif
+	struct [[gnu::packed]] usbStringLangDesc_t final
+	{
+		uint8_t length{4};
+		usbDescriptor_t descriptorType{usbDescriptor_t::string};
+		char16_t langID{0};
+
+		constexpr usbStringLangDesc_t(const char16_t lang) noexcept : langID{lang} { }
+	};
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+	static_assert(sizeof(usbStringLangDesc_t) == 4U);
+
 	inline namespace constants { using namespace usb::constants; }
 
 	extern const usbDeviceDescriptor_t deviceDescriptor;

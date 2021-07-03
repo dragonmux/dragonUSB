@@ -23,13 +23,7 @@ namespace usb::device
 		std::array<std::array<controlHandler_t, interfaceCount>, configsCount> controlHandlers{};
 	}
 
-	static const usbStringDesc_t stringLangIDDescriptor{{u"\x0904", 1}};
-	static const auto stringLangIDParts{stringLangIDDescriptor.asParts()};
-#ifndef USB_MEM_SEGMENTED
-	static const usbMultiPartTable_t stringLangID{stringLangIDParts.begin(), stringLangIDParts.end()};
-#else
-	static const flash_t<usbMultiPartTable_t> stringLangID{{stringLangIDParts.begin(), stringLangIDParts.end()}};
-#endif
+	static const usbStringLangDesc_t stringLangIDDescriptor{u'\x0904'};
 
 	answer_t handleGetDescriptor() noexcept
 	{
@@ -80,13 +74,13 @@ namespace usb::device
 			{
 				if (descriptor.index > stringCount)
 					break;
+				else if (descriptor.index == 0)
+					return {response_t::data, &stringLangIDDescriptor, sizeof(usbStringLangDesc_t), memory_t::flash};
+				const auto &string{strings[descriptor.index - 1U]};
 				epStatusControllerIn[0].isMultiPart(true);
 				epStatusControllerIn[0].partNumber = 0;
-				if (descriptor.index)
-					epStatusControllerIn[0].partsData = strings[descriptor.index - 1U];
-				else
-					epStatusControllerIn[0].partsData = stringLangID;
-				return {response_t::data, nullptr, epStatusControllerIn[0].partsData.totalLength(), memory_t::flash};
+				epStatusControllerIn[0].partsData = string;
+				return {response_t::data, nullptr, string.totalLength(), memory_t::flash};
 			}
 			default:
 				break;
