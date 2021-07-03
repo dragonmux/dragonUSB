@@ -12,12 +12,22 @@ namespace usb::dfu
 		std::uintptr_t end;
 	};
 
+	constexpr static std::size_t flashPageSize{USB_DFU_FLASH_PAGE_SIZE};
+
 	extern void registerHandlers(substrate::span<zone_t> flashZones,
 		uint8_t interface, uint8_t config) noexcept;
 	extern void detached(bool state) noexcept;
 
-	// This must be defined by the user firmware so the DFU driver knows how to reboot the device correctly
+	// These must be defined by the user firmware.
+	// Called by the DFU driver to reboot the device correctly
 	[[noreturn]] extern void reboot() noexcept;
+	// Called by the DFU driver to erase Flash space ready for writing data
+	extern void erase(std::uintptr_t address, std::size_t count) noexcept;
+	// Called by the DFU driver to perform the Flash write
+	extern void write(std::uintptr_t address, std::size_t count,
+		const std::array<uint8_t, flashPageSize> &data) noexcept;
+	// Tells the driver if Flash is currently busy as a result of one of the above.
+	extern bool flashBusy() noexcept;
 }
 
 #endif /*USB_DRIVERS_DFU___HXX*/
