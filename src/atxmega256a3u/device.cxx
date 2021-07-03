@@ -80,7 +80,7 @@ namespace usb::device
 
 		if (activeConfig == 0)
 			usbState = deviceState_t::addressed;
-		else if (activeConfig <= configsCount)
+		else
 		{
 			const auto descriptors{*configDescriptors[activeConfig - 1U]};
 			for (const auto &part : descriptors)
@@ -89,14 +89,12 @@ namespace usb::device
 				usbDescriptor_t type{static_cast<usbDescriptor_t>(descriptor[1])};
 				if (type == usbDescriptor_t::endpoint)
 				{
-					const auto endpoint{*static_cast<const usbEndpointDescriptor_t *>(part.descriptor)};
+					const auto endpoint{*flash_t<usbEndpointDescriptor_t *>(part.descriptor)};
 					setupEndpoint(endpoint);
 				}
 			}
 			usb::core::initHandlers();
 		}
-		else
-			return false;
 		return true;
 	}
 	} // namespace internal
