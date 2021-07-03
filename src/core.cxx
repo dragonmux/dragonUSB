@@ -25,16 +25,16 @@ namespace usb::core
 	std::array<usbEPStatus_t<const void>, endpointCount> epStatusControllerIn{};
 	std::array<usbEPStatus_t<void>, endpointCount> epStatusControllerOut{};
 
-	void registerHandler(usbEP_t ep, const uint8_t config, const handler_t &handler) noexcept
+	void registerHandler(usbEP_t ep, const uint8_t config, handler_t handler) noexcept
 	{
 		const auto endpoint{ep.endpoint()};
 		const auto direction{ep.dir()};
 		if (!endpoint || endpoint >= endpointCount || !config || config > configsCount)
 			return;
 		if (direction == endpointDir_t::controllerIn)
-			inHandlers[config - 1U][endpoint - 1U] = handler;
+			inHandlers[config - 1U][endpoint - 1U] = std::move(handler);
 		else
-			outHandlers[config - 1U][endpoint - 1U] = handler;
+			outHandlers[config - 1U][endpoint - 1U] = std::move(handler);
 	}
 
 	void unregisterHandler(usbEP_t ep, const uint8_t config) noexcept
