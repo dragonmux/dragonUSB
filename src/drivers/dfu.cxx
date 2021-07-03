@@ -1,4 +1,5 @@
 #include "usb/types.hxx"
+#include "usb/core.hxx"
 #include "usb/device.hxx"
 #include "usb/drivers/dfu.hxx"
 #include "usb/drivers/dfuTypes.hxx"
@@ -16,6 +17,13 @@ namespace usb::dfu
 	{
 		config.state = dfuState_t::applicationIdle;
 		config.status = dfuStatus_t::ok;
+	}
+
+	[[noreturn]] static void detach()
+	{
+		usb::core::detach();
+		config.state = dfuState_t::applicationDetach;
+		reboot();
 	}
 
 	static answer_t handleDFURequest(const std::size_t interface) noexcept
