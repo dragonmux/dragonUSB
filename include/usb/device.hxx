@@ -143,10 +143,11 @@ namespace usb::device
 	extern void handleControlPacket() noexcept;
 
 	using controlHandler_t = usb::types::answer_t (*)(std::size_t interface);
+	using altModeHandler_t = bool (*)();
 
 	extern void registerHandler(uint8_t interface, uint8_t config, controlHandler_t handler) noexcept;
 	extern void unregisterHandler(uint8_t interface, uint8_t config) noexcept;
-	extern void registerAltModeHandler(uint8_t interface, uint8_t config, callback_t handler) noexcept;
+	extern void registerAltModeHandler(uint8_t interface, uint8_t config, altModeHandler_t handler) noexcept;
 	extern void unregisterAltModeHandler(uint8_t interface, uint8_t config) noexcept;
 } // namespace usb::device
 

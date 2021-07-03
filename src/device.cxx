@@ -23,7 +23,7 @@ namespace usb::device
 	{
 		std::array<std::array<controlHandler_t, interfaceCount>, configsCount> controlHandlers{};
 	}
-	std::array<std::array<callback_t, interfaceCount>, configsCount> altModeHandlers{};
+	std::array<std::array<altModeHandler_t, interfaceCount>, configsCount> altModeHandlers{};
 
 	static const usbStringLangDesc_t stringLangIDDescriptor{u'\x0904'};
 
@@ -179,11 +179,9 @@ namespace usb::device
 				else if (packet.index < interfaceCount && !packet.length && packet.value < 0x0100U && activeConfig)
 				{
 					alternateModes[activeConfig - 1U][packet.index] = uint8_t(packet.value);
-					for (const auto handler : altModeHandlers[activeConfig - 1U])
-					{
-						if (handler)
-							handler();
-					}
+					const auto handler{altModeHandlers[activeConfig - 1U][packet.index]};
+					if (handler && !handler()) // If the handler is valid and says things are bad, stall.
+						return {response_t::stall, nullptr, 0};
 					// Acknowledge the request.
 					return {response_t::zeroLength, nullptr, 0};
 				}
@@ -210,7 +208,7 @@ namespace usb::device
 		controlHandlers[config - 1U][interface] = nullptr;
 	}
 
-	void registerAltModeHandler(uint8_t interface, const uint8_t config, callback_t handler) noexcept
+	void registerAltModeHandler(uint8_t interface, const uint8_t config, altModeHandler_t handler) noexcept
 	{
 		if (interface >= interfaceCount || !config || config > configsCount)
 			return;
