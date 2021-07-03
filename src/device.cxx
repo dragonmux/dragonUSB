@@ -154,16 +154,16 @@ namespace usb::device
 
 	void registerHandler(const uint8_t interface, const uint8_t config, controlHandler_t handler) noexcept
 	{
-		if (!interface || interface > interfaceCount || !config || config > configsCount)
+		if (interface >= interfaceCount || !config || config > configsCount)
 			return;
-		controlHandlers[config - 1U][interface - 1U] = handler;
+		controlHandlers[config - 1U][interface] = handler;
 	}
 
 	void unregisterHandler(const uint8_t interface, const uint8_t config) noexcept
 	{
-		if (!interface || interface > interfaceCount || !config || config > configsCount)
+		if (interface >= interfaceCount || !config || config > configsCount)
 			return;
-		controlHandlers[config - 1U][interface - 1U] = nullptr;
+		controlHandlers[config - 1U][interface] = nullptr;
 	}
 
 	void completeSetupPacket() noexcept
