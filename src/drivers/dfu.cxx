@@ -46,11 +46,17 @@ namespace usb::dfu
 		switch (request)
 		{
 			case types::request_t::detach:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
 				usb::device::setupCallback = detach;
 				return {response_t::zeroLength, nullptr, 0};
 			case types::request_t::getStatus:
+				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+					return {response_t::stall, nullptr, 0};
 				return {response_t::data, &config, sizeof(config)};
 			case types::request_t::clearStatus:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
 				if (config.state == dfuState_t::error)
 				{
 					config.state = dfuState_t::dfuIdle;
@@ -58,13 +64,17 @@ namespace usb::dfu
 				}
 				return {response_t::zeroLength, nullptr, 0};
 			case types::request_t::getState:
+				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+					return {response_t::stall, nullptr, 0};
 				return {response_t::data, &config.state, sizeof(dfuState_t)};
 			case types::request_t::abort:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
 				config.state = dfuState_t::dfuIdle;
 				return {response_t::zeroLength, nullptr, 0};
 		}
 
-		return {response_t::unhandled, nullptr, 0};
+		return {response_t::stall, nullptr, 0};
 	}
 
 	void registerHandlers(const substrate::span<std::intptr_t> zones,
