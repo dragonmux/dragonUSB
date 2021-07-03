@@ -4,13 +4,18 @@
 #include "usb/drivers/dfu.hxx"
 #include "usb/drivers/dfuTypes.hxx"
 
+using namespace usb::core;
+using namespace usb::device;
 using namespace usb::types;
 using namespace usb::dfu::types;
 using usb::device::packet;
 
 namespace usb::dfu
 {
-	config_t config{};
+	static config_t config{};
+
+	static substrate::span<zone_t> zones{};
+
 	static_assert(sizeof(config_t) == 6);
 
 	static void init()
@@ -86,10 +91,11 @@ namespace usb::dfu
 		return {response_t::stall, nullptr, 0};
 	}
 
-	void registerHandlers(const substrate::span<std::intptr_t> zones,
+	void registerHandlers(const substrate::span<zone_t> flashZones,
 		const uint8_t interface, const uint8_t config) noexcept
 	{
 		init();
+		zones = flashZones;
 		usb::device::registerHandler(interface, config, handleDFURequest);
 	}
 } // namespace usb::dfu
