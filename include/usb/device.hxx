@@ -134,8 +134,11 @@ namespace usb::types
 
 namespace usb::device
 {
+	using callback_t = void (*)();
+
 	extern usb::types::setupPacket_t packet;
 	extern uint8_t activeConfig;
+	extern callback_t setupCallback;
 
 	extern void handleControlPacket() noexcept;
 

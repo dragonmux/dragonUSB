@@ -15,6 +15,7 @@ namespace usb::device
 	setupPacket_t packet{};
 	uint8_t activeConfig{};
 	static std::array<uint8_t, 2> statusResponse{};
+	callback_t setupCallback{nullptr};
 
 	static std::array<std::array<uint8_t, interfaceCount>, configsCount> alternateModes{};
 
@@ -24,6 +25,29 @@ namespace usb::device
 	}
 
 	static const usbStringLangDesc_t stringLangIDDescriptor{u'\x0904'};
+
+	void address() noexcept
+	{
+		if (usbState == deviceState_t::addressing)
+		{
+			// We just handled an addressing request, and prepared our answer. Before we get a chance
+			// to return from the interrupt that caused this chain of events, lets set the device address.
+			const auto address{packet.value.asAddress()};
+
+			// Check that the last setup packet was actually a set address request
+			if (packet.requestType.type() != setupPacket::request_t::typeStandard ||
+				packet.request != request_t::setAddress || address.addrH != 0)
+			{
+				usb::core::address(0);
+				usbState = deviceState_t::waiting;
+			}
+			else
+			{
+				usb::core::address(address.addrL);
+				usbState = deviceState_t::addressed;
+			}
+		}
+	}
 
 	answer_t handleGetDescriptor() noexcept
 	{
@@ -115,6 +139,7 @@ namespace usb::device
 		{
 			case request_t::setAddress:
 				usbState = deviceState_t::addressing;
+				setupCallback = address;
 				return {response_t::zeroLength, nullptr, 0};
 			case request_t::setDescriptor:
 				// We do not support setting descriptors.
@@ -277,24 +302,10 @@ namespace usb::device
 
 	void handleControllerInPacket() noexcept
 	{
-		if (usbState == deviceState_t::addressing)
+		if (setupCallback)
 		{
-			// We just handled an addressing request, and prepared our answer. Before we get a chance
-			// to return from the interrupt that caused this chain of events, lets set the device address.
-			const auto address{packet.value.asAddress()};
-
-			// Check that the last setup packet was actually a set address request
-			if (packet.requestType.type() != setupPacket::request_t::typeStandard ||
-				packet.request != request_t::setAddress || address.addrH != 0)
-			{
-				usb::core::address(0);
-				usbState = deviceState_t::waiting;
-			}
-			else
-			{
-				usb::core::address(address.addrL);
-				usbState = deviceState_t::addressed;
-			}
+			setupCallback();
+			setupCallback = nullptr;
 		}
 
 		// If we're in the data phase
