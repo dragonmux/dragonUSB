@@ -69,10 +69,11 @@ namespace usb::dfu::types
 
 	struct flashState_t final
 	{
-		uintptr_t readAddr;
-		uintptr_t eraseAddr;
-		uintptr_t writeAddr;
-		uintptr_t endAddr;
+		std::uintptr_t readAddr;
+		std::uintptr_t eraseAddr;
+		std::uintptr_t writeAddr;
+		std::uintptr_t endAddr;
+		std::size_t byteCount;
 		flashOp_t op;
 	};
 } // namespace usb::dfu::types

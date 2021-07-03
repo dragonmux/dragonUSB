@@ -8,8 +8,8 @@ namespace usb::dfu
 {
 	struct zone_t final
 	{
-		uintptr_t start;
-		uintptr_t end;
+		std::uintptr_t start;
+		std::uintptr_t end;
 	};
 
 	extern void registerHandlers(substrate::span<zone_t> flashZones,
