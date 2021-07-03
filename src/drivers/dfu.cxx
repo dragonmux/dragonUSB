@@ -45,6 +45,9 @@ namespace usb::dfu
 		const auto request{static_cast<types::request_t>(packet.request)};
 		switch (request)
 		{
+			case types::request_t::detach:
+				usb::device::setupCallback = detach;
+				return {response_t::zeroLength, nullptr, 0};
 			case types::request_t::getStatus:
 				return {response_t::data, &config, sizeof(config)};
 			case types::request_t::clearStatus:
