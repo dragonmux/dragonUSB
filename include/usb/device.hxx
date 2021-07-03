@@ -146,6 +146,8 @@ namespace usb::device
 
 	extern void registerHandler(uint8_t interface, uint8_t config, controlHandler_t handler) noexcept;
 	extern void unregisterHandler(uint8_t interface, uint8_t config) noexcept;
+	extern void registerAltModeHandler(uint8_t interface, uint8_t config, callback_t handler) noexcept;
+	extern void unregisterAltModeHandler(uint8_t interface, uint8_t config) noexcept;
 } // namespace usb::device
 
 #endif /*USB_DEVICE___HXX*/
