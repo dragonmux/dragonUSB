@@ -13,6 +13,7 @@ using usb::device::packet;
 namespace usb::dfu
 {
 	static config_t config{};
+	static std::array<uint8_t, flashPageSize> buffer{};
 
 	static substrate::span<zone_t> zones{};
 	static flashState_t flashState{};
@@ -62,8 +63,24 @@ namespace usb::dfu
 		reboot();
 	}
 
+	void downloadStepDone() noexcept { config.state = dfuState_t::downloadSync; }
+
 	static answer_t handleDownload() noexcept
 	{
+		if (flashState.eraseAddr + packet.length >= flashState.endAddr)
+			return {response_t::stall, nullptr, 0};
+
+		flashState.op = flashOp_t::erase;
+		erase(flashState.eraseAddr, flashPageSize);
+		flashState.eraseAddr += flashPageSize;
+
+		auto &epStatus{epStatusControllerOut[0]};
+		epStatus.memBuffer = buffer.data();
+		epStatus.transferCount = packet.length;
+		while (!readEPReady(1))
+			continue;
+		readEP(1);
+		setupCallback = downloadStepDone;
 		return {response_t::zeroLength, nullptr, 0};
 	}
 
@@ -116,6 +133,25 @@ namespace usb::dfu
 
 	void tick() noexcept
 	{
+		if (flashState.op == flashOp_t::none || flashBusy())
+			return;
+		else if (flashState.op == flashOp_t::erase &&
+			flashState.endAddr >= flashState.writeAddr + flashState.byteCount)
+			flashState.op = flashOp_t::write;
+		if (flashState.op == flashOp_t::write && config.state == dfuState_t::downloadSync)
+		{
+			if (flashState.byteCount == 0)
+			{
+				flashState.op = flashOp_t::none;
+				config.state = dfuState_t::downloadIdle;
+			}
+			else
+			{
+				write(flashState.writeAddr, flashState.byteCount, buffer);
+				flashState.writeAddr += flashState.byteCount;
+				flashState.byteCount = 0;
+			}
+		}
 	}
 
 	void registerHandlers(const substrate::span<zone_t> flashZones,
