@@ -96,14 +96,14 @@ namespace usb::core
 			return outHandlers[config][endpoint - 1U];
 	}
 
-	void registerSOFHandler(uint8_t interface, sofHandler_t handler) noexcept
+	void registerSOFHandler(uint16_t interface, sofHandler_t handler) noexcept
 	{
 		if (interface >= interfaceCount)
 			return;
 		sofHandlers[interface] = handler;
 	}
 
-	void unregsiterSOFHandler(uint8_t interface) noexcept
+	void unregsiterSOFHandler(uint16_t interface) noexcept
 	{
 		if (interface >= interfaceCount)
 			return;
