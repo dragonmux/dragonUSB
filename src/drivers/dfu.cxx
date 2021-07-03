@@ -34,6 +34,11 @@ namespace usb::dfu
 		reboot();
 	}
 
+	static answer_t handleDownload() noexcept
+	{
+		return {response_t::zeroLength, nullptr, 0};
+	}
+
 	static answer_t handleDFURequest(const std::size_t interface) noexcept
 	{
 		const auto &requestType{packet.requestType};
@@ -50,6 +55,10 @@ namespace usb::dfu
 					return {response_t::stall, nullptr, 0};
 				usb::device::setupCallback = detach;
 				return {response_t::zeroLength, nullptr, 0};
+			case types::request_t::download:
+				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+					return {response_t::stall, nullptr, 0};
+				return handleDownload();
 			case types::request_t::getStatus:
 				if (packet.requestType.dir() == endpointDir_t::controllerOut)
 					return {response_t::stall, nullptr, 0};
