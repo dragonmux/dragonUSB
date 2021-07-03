@@ -59,6 +59,22 @@ namespace usb::dfu::types
 		dfuState_t state;
 		uint8_t string;
 	};
+
+	enum class flashOp_t : uint8_t
+	{
+		none,
+		erase,
+		write
+	};
+
+	struct flashState_t final
+	{
+		uintptr_t readAddr;
+		uintptr_t eraseAddr;
+		uintptr_t writeAddr;
+		uintptr_t endAddr;
+		flashOp_t op;
+	};
 } // namespace usb::dfu::types
 
 #endif /*USB_DRIVERS_DFU_TYPES__HXX*/

@@ -15,6 +15,7 @@ namespace usb::dfu
 	static config_t config{};
 
 	static substrate::span<zone_t> zones{};
+	static flashState_t flashState{};
 
 	static_assert(sizeof(config_t) == 6);
 
@@ -26,12 +27,24 @@ namespace usb::dfu
 		config.status = dfuStatus_t::ok;
 	}
 
-	static void handleSetInterface()
+	static bool handleSetInterface()
 	{
+		unregsiterSOFHandler(packet.index);
 		if (packet.value >= zones.size())
-			return;
+			return false;
+
+		config.state = dfuState_t::dfuIdle;
+		config.status = dfuStatus_t::ok;
+
+		const auto &zone{zones[packet.value]};
+		flashState.op = flashOp_t::none;
+		flashState.readAddr = zone.start;
+		flashState.eraseAddr = zone.start;
+		flashState.writeAddr = zone.start;
+		flashState.endAddr = zone.end;
 
 		registerSOFHandler(packet.index, tick);
+		return true;
 	}
 
 	void detached(const bool state) noexcept
