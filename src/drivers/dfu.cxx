@@ -89,6 +89,7 @@ namespace usb::dfu
 	void registerHandlers(const substrate::span<std::intptr_t> zones,
 		const uint8_t interface, const uint8_t config) noexcept
 	{
+		init();
 		usb::device::registerHandler(interface, config, handleDFURequest);
 	}
 } // namespace usb::dfu
