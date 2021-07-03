@@ -626,7 +626,7 @@ namespace usb::descriptors
 
 namespace usb::descriptors
 {
-	struct [[gnu::packed]] usbStringDesc_t
+	struct [[gnu::packed]] usbStringDesc_t final
 	{
 		uint8_t length{0};
 		usbDescriptor_t descriptorType{usbDescriptor_t::string};

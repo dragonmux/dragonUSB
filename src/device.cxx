@@ -42,7 +42,7 @@ namespace usb::device
 		{
 			// Handle device descriptor requests
 			case usbDescriptor_t::device:
-				return {response_t::data, &deviceDescriptor, deviceDescriptor.length, memory_t::flash};
+				return {response_t::data, &deviceDescriptor, sizeof(usbDeviceDescriptor_t), memory_t::flash};
 			case usbDescriptor_t::deviceQualifier:
 				return {response_t::stall, nullptr, 0};
 			// Handle configuration descriptor requests
@@ -65,7 +65,7 @@ namespace usb::device
 				if (descriptor.index >= interfaceDescriptorCount)
 					break;
 				const auto &interfaceDescriptor{interfaceDescriptors[descriptor.index]};
-				return {response_t::data, &interfaceDescriptor, interfaceDescriptor.length, memory_t::flash};
+				return {response_t::data, &interfaceDescriptor, sizeof(usbInterfaceDescriptor_t), memory_t::flash};
 			}
 			// Handle endpoint descriptor requests
 			case usbDescriptor_t::endpoint:
@@ -73,7 +73,7 @@ namespace usb::device
 				if (descriptor.index >= endpointDescriptorCount)
 					break;
 				const auto &endpointDescriptor{endpointDescriptors[descriptor.index]};
-				return {response_t::data, &endpointDescriptor, endpointDescriptor.length, memory_t::flash};
+				return {response_t::data, &endpointDescriptor, sizeof(usbEndpointDescriptor_t), memory_t::flash};
 			}
 			// Handle string requests
 			case usbDescriptor_t::string:
