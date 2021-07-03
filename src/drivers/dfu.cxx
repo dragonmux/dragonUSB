@@ -5,6 +5,7 @@
 
 using namespace usb::types;
 using namespace usb::dfu::types;
+using usb::device::packet;
 
 namespace usb::dfu
 {
@@ -17,7 +18,7 @@ namespace usb::dfu
 		config.status = dfuStatus_t::ok;
 	}
 
-	static answer_t handleDFURequest(const std::size_t interface, const setupPacket_t &packet) noexcept
+	static answer_t handleDFURequest(const std::size_t interface) noexcept
 	{
 		const auto &requestType{packet.requestType};
 		if (requestType.recipient() != setupPacket::recipient_t::interface ||

@@ -242,7 +242,7 @@ namespace usb::device
 			for (const auto &[i, handler] : substrate::indexedIterator_t{controlHandlers[activeConfig - 1U]})
 			{
 				if (handler)
-					std::tie(response, data, size, memoryType) = handler(i + 1U, packet);
+					std::tie(response, data, size, memoryType) = handler(i);
 			}
 		}
 
