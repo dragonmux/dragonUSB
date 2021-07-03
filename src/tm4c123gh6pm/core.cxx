@@ -464,6 +464,15 @@ namespace usb::core
 			(!rxStatus && !txStatus))
 			return;
 
+		if (status & vals::usb::itrStatusSOF)
+		{
+			for (const auto &handler : sofHandlers)
+			{
+				if (handler)
+					handler();
+			}
+		}
+
 		processEndpoints(rxStatus, txStatus);
 	}
 } // namespace usb::core
