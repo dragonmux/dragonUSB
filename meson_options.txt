@@ -20,3 +20,6 @@ option('strings', type: 'integer', min: 0, max: 255, value: 0,
 
 option('drivers', type: 'array', value: [], description: 'Which drivers you wish to enable',
 	choices: ['dfu'])
+
+option('dfuFlashPageSize', type: 'integer', min: 0, max: 8192, value: 0,
+	description: '[DFU] How big a flash page is on the device')

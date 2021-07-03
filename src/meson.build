@@ -53,8 +53,14 @@ buildDefs = [
 	'-DUSB_CONFIG_DESCRIPTORS=@0@'.format(get_option('configDescriptors')),
 	'-DUSB_INTERFACE_DESCRIPTORS=@0@'.format(get_option('ifaceDescriptors')),
 	'-DUSB_ENDPOINT_DESCRIPTORS=@0@'.format(get_option('endpointDescriptors')),
-	'-DUSB_STRINGS=@0@'.format(get_option('strings'))
+	'-DUSB_STRINGS=@0@'.format(get_option('strings')),
 ]
+
+if 'dfu' in get_option('drivers')
+	buildDefs += [
+		'-DUSB_DFU_FLASH_PAGE_SIZE=@0@'.format(get_option('dfuFlashPageSize')),
+	]
+endif
 
 allowPIC = cxx.has_argument('-fPIC')
 
