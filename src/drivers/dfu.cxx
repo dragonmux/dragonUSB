@@ -71,7 +71,7 @@ namespace usb::dfu
 			return {response_t::stall, nullptr, 0};
 
 		flashState.op = flashOp_t::erase;
-		erase(flashState.eraseAddr, flashPageSize);
+		erase(flashState.eraseAddr);
 		flashState.eraseAddr += flashPageSize;
 
 		auto &epStatus{epStatusControllerOut[0]};

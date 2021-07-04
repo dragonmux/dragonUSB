@@ -23,11 +23,11 @@ namespace usb::dfu
 	// Called by the DFU driver to reboot the device correctly
 	[[noreturn]] extern void reboot() noexcept;
 	// Called by the DFU driver to erase Flash space ready for writing data
-	extern void erase(std::uintptr_t address, std::size_t count) noexcept;
+	extern void erase(std::uintptr_t address) noexcept;
 	// Called by the DFU driver to perform the Flash write
 	extern void write(std::uintptr_t address, std::size_t count, const uint8_t *buffer) noexcept;
 	// Tells the driver if Flash is currently busy as a result of one of the above.
 	extern bool flashBusy() noexcept;
-}
+} // namespace usb::dfu
 
 #endif /*USB_DRIVERS_DFU___HXX*/
