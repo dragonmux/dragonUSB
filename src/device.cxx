@@ -337,12 +337,6 @@ namespace usb::device
 
 	void handleControllerInPacket() noexcept
 	{
-		if (setupCallback)
-		{
-			setupCallback();
-			setupCallback = nullptr;
-		}
-
 		// If we're in the data phase
 		if (usbCtrlState == ctrlState_t::dataTX)
 		{
@@ -356,6 +350,12 @@ namespace usb::device
 		// Otherwise this was a status phase TX-complete interrupt
 		else
 			usbCtrlState = ctrlState_t::idle;
+
+		if (setupCallback && usbCtrlState == ctrlState_t::idle)
+		{
+			setupCallback();
+			setupCallback = nullptr;
+		}
 	}
 	} // namespace internal
 } // namespace usb::device
