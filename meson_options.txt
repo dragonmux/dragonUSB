@@ -22,4 +22,6 @@ option('drivers', type: 'array', value: [], description: 'Which drivers you wish
 	choices: ['dfu'])
 
 option('dfuFlashPageSize', type: 'integer', min: 0, max: 8192, value: 0,
-	description: '[DFU] How big a flash page is on the device')
+	description: '[DFU] How big a Flash page is on the device')
+option('dfuFlashBufferSize', type: 'integer', min: 0, max: 8192, value: 0,
+	description: '[DFU] How big the Flash write buffer is on the device')

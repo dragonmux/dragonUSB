@@ -74,6 +74,7 @@ namespace usb::dfu::types
 		std::uintptr_t writeAddr;
 		std::uintptr_t endAddr;
 		std::size_t byteCount;
+		std::size_t offset;
 		flashOp_t op;
 	};
 } // namespace usb::dfu::types

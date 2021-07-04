@@ -140,16 +140,19 @@ namespace usb::dfu
 			flashState.op = flashOp_t::write;
 		if (flashState.op == flashOp_t::write && config.state == dfuState_t::downloadSync)
 		{
-			if (flashState.byteCount == 0)
+			if (flashState.offset == flashState.byteCount)
 			{
 				flashState.op = flashOp_t::none;
+				flashState.offset = 0;
+				flashState.byteCount = 0;
 				config.state = dfuState_t::downloadIdle;
 			}
 			else
 			{
-				write(flashState.writeAddr, flashState.byteCount, buffer);
-				flashState.writeAddr += flashState.byteCount;
-				flashState.byteCount = 0;
+				const auto amount{std::min(flashState.byteCount - flashState.offset, flashBufferSize)};
+				write(flashState.writeAddr, amount, buffer.data() + flashState.offset);
+				flashState.offset += amount;
+				flashState.writeAddr += amount;
 			}
 		}
 	}
