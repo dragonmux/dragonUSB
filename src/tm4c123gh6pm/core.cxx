@@ -409,7 +409,11 @@ namespace usb::core
 					usbPacket.dir(endpointDir_t::controllerIn);
 
 				if (endpoint == 0U)
+				{
+					if (usbCtrl.ep0Ctrl.statusCtrlL & vals::usb::ep0StatusCtrlLStalled)
+						usbCtrl.ep0Ctrl.statusCtrlL &= uint8_t(~vals::usb::ep0StatusCtrlLStalled);
 					usb::device::handleControlPacket();
+				}
 				else
 				{
 					const auto &handler
