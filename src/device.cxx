@@ -252,7 +252,7 @@ namespace usb::device
 			else
 				//  <SETUP[0]><IN[1]>
 				usbCtrlState = ctrlState_t::statusTX;
-			if (writeEP(0))
+			if (writeEP(0) || (!writeEPBusy(0) && writeEP(0)))
 			{
 				if (usbCtrlState == ctrlState_t::dataTX)
 					usbCtrlState = ctrlState_t::statusRX;
