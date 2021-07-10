@@ -53,7 +53,8 @@ namespace usb::device
 	answer_t handleGetDescriptor() noexcept
 	{
 		using namespace usb::descriptors;
-		if (packet.requestType.dir() == endpointDir_t::controllerOut)
+		if (packet.requestType.dir() == endpointDir_t::controllerOut ||
+			packet.requestType.recipient() != setupPacket::recipient_t::device)
 			return {response_t::stall, nullptr, 0};
 		const auto descriptor = packet.value.asDescriptor();
 
@@ -139,10 +140,14 @@ namespace usb::device
 
 	answer_t handleStandardRequest() noexcept
 	{
+		if (packet.requestType.type() != setupPacket::request_t::typeStandard)
+			return {response_t::unhandled, nullptr, 0};
+
 		switch (packet.request)
 		{
 			case request_t::setAddress:
-				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+				if (packet.requestType.dir() == endpointDir_t::controllerIn ||
+					packet.requestType.recipient() != setupPacket::recipient_t::device)
 					return {response_t::stall, nullptr, 0};
 				usbState = deviceState_t::addressing;
 				setupCallback = address;
@@ -153,7 +158,8 @@ namespace usb::device
 			case request_t::getDescriptor:
 				return handleGetDescriptor();
 			case request_t::setConfiguration:
-				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+				if (packet.requestType.dir() == endpointDir_t::controllerIn ||
+					packet.requestType.recipient() != setupPacket::recipient_t::device)
 					return {response_t::stall, nullptr, 0};
 				else if (handleSetConfiguration())
 					// Acknowledge the request.
@@ -161,19 +167,22 @@ namespace usb::device
 				// Bad request? Stall.
 				return {response_t::stall, nullptr, 0};
 			case request_t::getConfiguration:
-				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+				if (packet.requestType.dir() == endpointDir_t::controllerOut ||
+					packet.requestType.recipient() != setupPacket::recipient_t::device)
 					return {response_t::stall, nullptr, 0};
 				return {response_t::data, &activeConfig, 1};
 			case request_t::getStatus:
 				return handleGetStatus();
 			case request_t::getInterface:
-				if (packet.requestType.dir() == endpointDir_t::controllerOut)
+				if (packet.requestType.dir() == endpointDir_t::controllerOut ||
+					packet.requestType.recipient() != setupPacket::recipient_t::interface)
 					return {response_t::stall, nullptr, 0};
 				else if (packet.index < interfaceCount && packet.length == 1 && !packet.value && activeConfig)
 					return {response_t::data, &alternateModes[activeConfig - 1U][packet.index], 1};
 				return {response_t::stall, nullptr, 0};
 			case request_t::setInterface:
-				if (packet.requestType.dir() == endpointDir_t::controllerIn)
+				if (packet.requestType.dir() == endpointDir_t::controllerIn ||
+					packet.requestType.recipient() != setupPacket::recipient_t::interface)
 					return {response_t::stall, nullptr, 0};
 				// If the interface is valid and we're configured
 				else if (packet.index < interfaceCount && !packet.length && packet.value < 0x0100U && activeConfig)
