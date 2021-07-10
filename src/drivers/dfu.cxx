@@ -78,9 +78,7 @@ namespace usb::dfu
 		auto &epStatus{epStatusControllerOut[0]};
 		epStatus.memBuffer = buffer.data();
 		epStatus.transferCount = packet.length;
-		while (!readEPReady(1))
-			continue;
-		readEP(1);
+		epStatus.needsArming(true);
 		setupCallback = downloadStepDone;
 		return {response_t::zeroLength, nullptr, 0};
 	}

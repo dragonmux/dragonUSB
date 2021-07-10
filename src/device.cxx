@@ -307,7 +307,8 @@ namespace usb::device
 		}
 
 		epStatusControllerIn[0].stall(response == response_t::stall || response == response_t::unhandled);
-		epStatusControllerIn[0].needsArming(response == response_t::data || response == response_t::zeroLength);
+		epStatusControllerIn[0].needsArming(response == response_t::data ||
+			(!epStatusControllerOut[0].needsArming() && response == response_t::zeroLength));
 		epStatusControllerIn[0].memBuffer = data;
 		epStatusControllerIn[0].memoryType(memoryType);
 		const auto transferCount{response == response_t::zeroLength ? uint16_t(0U) : size};
