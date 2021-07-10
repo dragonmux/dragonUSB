@@ -327,8 +327,9 @@ namespace usb::device
 			if (readEP(0))
 			{
 				// If we now have all the data for the transaction..
+				epStatusControllerIn[0].needsArming(true);
+				writeEP(0);
 				usbCtrlState = ctrlState_t::statusTX;
-				// TODO: Handle data and generate status response.
 			}
 		}
 		// If we're in the status phase
