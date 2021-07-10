@@ -67,7 +67,8 @@ namespace usb::dfu
 
 	static answer_t handleDownload() noexcept
 	{
-		if (flashState.eraseAddr + packet.length >= flashState.endAddr)
+		if (flashState.eraseAddr + packet.length >= flashState.endAddr ||
+			packet.length > flashPageSize)
 			return {response_t::stall, nullptr, 0};
 
 		flashState.op = flashOp_t::erase;
