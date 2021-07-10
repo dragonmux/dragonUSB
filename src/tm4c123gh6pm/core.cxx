@@ -252,7 +252,7 @@ namespace usb::core
 		// Mark the FIFO contents as done with
 		if (endpoint == 0U)
 		{
-			if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusRX)
+			if (epStatus.transferCount || usbCtrlState == ctrlState_t::idle || usbCtrlState == ctrlState_t::statusRX)
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
 			else
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
