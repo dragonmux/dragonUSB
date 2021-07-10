@@ -15,7 +15,7 @@ namespace usb::dfu
 	static config_t config{};
 	static std::array<uint8_t, flashPageSize> buffer{};
 
-	static substrate::span<zone_t> zones{};
+	static substrate::span<const zone_t> zones{};
 	static flashState_t flashState{};
 
 	static_assert(sizeof(config_t) == 6);
@@ -157,7 +157,7 @@ namespace usb::dfu
 		}
 	}
 
-	void registerHandlers(const substrate::span<zone_t> flashZones,
+	void registerHandlers(const substrate::span<const zone_t> flashZones,
 		const uint8_t interface, const uint8_t config) noexcept
 	{
 		init();
