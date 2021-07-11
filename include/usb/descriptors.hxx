@@ -203,9 +203,10 @@ namespace usb::descriptors
 			mouse = 2
 		};
 
-		enum class application_t : uint8_t
+		enum class dfu_t : uint8_t
 		{
-			runtime = 1
+			runtime = 1,
+			dfu = 2
 		};
 
 		enum class vendor_t : uint8_t
