@@ -44,6 +44,13 @@ namespace usb::types
 			other = 3
 		};
 
+		enum class reportType_t : uint8_t
+		{
+			input = 1,
+			output = 2,
+			feature = 3
+		};
+
 		struct requestType_t final
 		{
 		private:
@@ -70,6 +77,12 @@ namespace usb::types
 		{
 			uint8_t addrL;
 			uint8_t addrH;
+		};
+
+		struct report_t final
+		{
+			uint8_t index;
+			reportType_t type;
 		};
 
 		struct value_t final
@@ -101,6 +114,13 @@ namespace usb::types
 				static_assert(sizeof(uint8_t) < sizeof(uint16_t));
 				static_assert(sizeof(uint8_t) == 1);
 				std::memcpy(&result, &value, sizeof(result));
+				return result;
+			}
+
+			[[nodiscard]] report_t asReport() const noexcept
+			{
+				report_t result{};
+				std::memcpy(&result, &value, sizeof(value));
 				return result;
 			}
 		};
