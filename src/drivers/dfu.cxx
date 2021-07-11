@@ -67,19 +67,24 @@ namespace usb::dfu
 
 	static answer_t handleDownload() noexcept
 	{
-		if (flashState.eraseAddr + packet.length >= flashState.endAddr ||
-			packet.length > flashPageSize)
-			return {response_t::stall, nullptr, 0};
+		if (packet.length)
+		{
+			if (flashState.eraseAddr + packet.length >= flashState.endAddr ||
+				packet.length > flashPageSize)
+				return {response_t::stall, nullptr, 0};
 
-		flashState.op = flashOp_t::erase;
-		erase(flashState.eraseAddr);
-		flashState.eraseAddr += flashPageSize;
+			flashState.op = flashOp_t::erase;
+			erase(flashState.eraseAddr);
+			flashState.eraseAddr += flashPageSize;
 
-		auto &epStatus{epStatusControllerOut[0]};
-		epStatus.memBuffer = buffer.data();
-		epStatus.transferCount = packet.length;
-		epStatus.needsArming(true);
-		setupCallback = downloadStepDone;
+			auto &epStatus{epStatusControllerOut[0]};
+			epStatus.memBuffer = buffer.data();
+			epStatus.transferCount = packet.length;
+			epStatus.needsArming(true);
+			setupCallback = downloadStepDone;
+		}
+		else
+			config.state = dfuState_t::dfuIdle;
 		return {response_t::zeroLength, nullptr, 0};
 	}
 
