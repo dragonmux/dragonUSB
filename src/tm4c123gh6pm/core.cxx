@@ -464,8 +464,7 @@ namespace usb::core
 
 		if (usbState == deviceState_t::detached ||
 			usbState == deviceState_t::attached ||
-			usbState == deviceState_t::powered ||
-			(!rxStatus && !txStatus))
+			usbState == deviceState_t::powered)
 			return;
 
 		if (status & vals::usb::itrStatusSOF)
@@ -476,6 +475,8 @@ namespace usb::core
 					handler();
 			}
 		}
+		if (!rxStatus && !txStatus)
+			return;
 
 		processEndpoints(rxStatus, txStatus);
 	}
