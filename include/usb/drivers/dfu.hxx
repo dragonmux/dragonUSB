@@ -13,7 +13,7 @@ namespace usb::dfu
 	};
 
 	constexpr static std::size_t flashPageSize{USB_DFU_FLASH_PAGE_SIZE};
-	constexpr static std::size_t flashBufferSize{USB_DFU_FLASH_PAGE_SIZE};
+	constexpr static std::size_t flashBufferSize{USB_DFU_FLASH_BUFFER_SIZE};
 
 	extern void registerHandlers(substrate::span<const zone_t> flashZones,
 		uint8_t interface, uint8_t config) noexcept;
