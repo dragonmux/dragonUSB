@@ -169,13 +169,13 @@ namespace usb::core
 		USB.INTFLAGSACLR = vals::usb::itrStatusSuspend;
 	}
 
-	const void *sendData(const uint8_t ep, const void *const bufferPtr, const uint8_t length,
+	const void *sendData(const uint8_t endpoint, const void *const bufferPtr, const uint8_t length,
 		const uint8_t offset = 0) noexcept
 	{
 		auto *const inBuffer{static_cast<const uint8_t *>(bufferPtr)};
-		auto *const outBuffer{epBuffer[(ep << 1) + 1].data() + offset};
+		auto *const outBuffer{epBuffer[(endpoint << 1) + 1].data() + offset};
 		// Copy the data to tranmit from the user buffer
-		if (epStatusControllerIn[ep].memoryType() == memory_t::sram)
+		if (epStatusControllerIn[endpoint].memoryType() == memory_t::sram)
 		{
 			for (uint8_t i{0}; i < length; ++i)
 				outBuffer[i] = inBuffer[i];
@@ -192,9 +192,9 @@ namespace usb::core
 		return inBuffer + length;
 	}
 
-	void *recvData(const uint8_t ep, void *const bufferPtr, const uint8_t length) noexcept
+	void *recvData(const uint8_t endpoint, void *const bufferPtr, const uint8_t length) noexcept
 	{
-		const auto *const inBuffer{epBuffer[(ep << 1)].data()};
+		const auto *const inBuffer{epBuffer[(endpoint << 1)].data()};
 		auto *const outBuffer{static_cast<uint8_t *>(bufferPtr)};
 		// Copy the received data to the user buffer
 		for (uint8_t i{0}; i < length; ++i)
@@ -209,16 +209,16 @@ namespace usb::core
 	 * @returns true when the all the data to be read has been retreived,
 	 * false if there is more left to fetch.
 	 */
-	bool readEP(const uint8_t ep) noexcept
+	bool readEP(const uint8_t endpoint) noexcept
 	{
-		auto &epStatus{epStatusControllerOut[ep]};
-		auto &epCtrl{endpoints[ep].controllerOut};
+		auto &epStatus{epStatusControllerOut[endpoint]};
+		auto &epCtrl{endpoints[endpoint].controllerOut};
 		auto readCount{epCtrl.CNT};
 		// Bounds sanity and then adjust how much is left to transfer
 		if (readCount > epStatus.transferCount)
 			readCount = epStatus.transferCount;
 		epStatus.transferCount -= readCount;
-		epStatus.memBuffer = recvData(ep, epStatus.memBuffer, readCount);
+		epStatus.memBuffer = recvData(endpoint, epStatus.memBuffer, readCount);
 		// Mark the recv buffer contents as done with
 		epCtrl.CNT = 0;
 		epCtrl.STATUS = 0;
@@ -229,10 +229,10 @@ namespace usb::core
 	 * @returns true when the data to be transmitted is entirely sent,
 	 * false if there is more left to send.
 	 */
-	bool writeEP(const uint8_t ep) noexcept
+	bool writeEP(const uint8_t endpoint) noexcept
 	{
-		auto &epStatus{epStatusControllerIn[ep]};
-		auto &epCtrl{endpoints[ep].controllerIn};
+		auto &epStatus{epStatusControllerIn[endpoint]};
+		auto &epCtrl{endpoints[endpoint].controllerIn};
 		const auto sendCount{[&]() noexcept -> uint8_t
 		{
 			// Bounds sanity and then adjust how much is left to transfer
@@ -243,7 +243,7 @@ namespace usb::core
 		epStatus.transferCount -= sendCount;
 
 		if (!epStatus.isMultiPart())
-			epStatus.memBuffer = sendData(ep, epStatus.memBuffer, sendCount);
+			epStatus.memBuffer = sendData(endpoint, epStatus.memBuffer, sendCount);
 		else
 		{
 			if (!epStatus.memBuffer)
@@ -263,7 +263,7 @@ namespace usb::core
 					return amount;
 				}()};
 				sendAmount -= partAmount;
-				epStatus.memBuffer = sendData(ep, epStatus.memBuffer, partAmount, sendOffset);
+				epStatus.memBuffer = sendData(endpoint, epStatus.memBuffer, partAmount, sendOffset);
 				sendOffset += partAmount;
 				// Get the buffer back to check if we exhausted it
 				auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
@@ -287,9 +287,9 @@ namespace usb::core
 		epCtrl.CTRL |= vals::usb::usbEPCtrlStall;
 	}
 
-	void pauseWriteEP(const uint8_t ep) noexcept
+	void pauseWriteEP(const uint8_t endpoint) noexcept
 	{
-		auto &epCtrl{endpoints[ep].controllerIn};
+		auto &epCtrl{endpoints[endpoint].controllerIn};
 		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
 	}
 
