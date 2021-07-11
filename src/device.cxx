@@ -350,6 +350,7 @@ namespace usb::device
 				setupCallback();
 				setupCallback = nullptr;
 			}
+			handleSetupPacket();
 		}
 	}
 
