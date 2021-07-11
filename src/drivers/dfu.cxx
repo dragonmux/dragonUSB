@@ -76,6 +76,8 @@ namespace usb::dfu
 			flashState.op = flashOp_t::erase;
 			erase(flashState.eraseAddr);
 			flashState.eraseAddr += flashPageSize;
+			flashState.offset = 0;
+			flashState.byteCount = packet.length;
 
 			auto &epStatus{epStatusControllerOut[0]};
 			epStatus.memBuffer = buffer.data();
