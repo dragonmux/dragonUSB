@@ -27,7 +27,7 @@ namespace usb::core
 	void init() noexcept
 	{
 		// Enable the USB peripheral
-		USB.CTRLB &= ~vals::usb::ctrlBAttach;
+		USB.CTRLB &= uint8_t(~vals::usb::ctrlBAttach);
 		USB.CTRLA = vals::usb::ctrlAUSBEnable | vals::usb::ctrlAModeFullSpeed | vals::usb::ctrlAMaxEP(2);
 
 		for (auto [i, endpoint] : substrate::indexedIterator_t{endpoints})
@@ -69,7 +69,7 @@ namespace usb::core
 		USB.INTCTRLB &= vals::usb::intCtrlBClearMask;
 
 		// Ensure the device address is 0
-		USB.ADDR &= ~vals::usb::addressMask;
+		USB.ADDR &= uint8_t(~vals::usb::addressMask);
 		// Ensure we're in the unconfigured configuration
 		usb::device::activeConfig = 0;
 		// Enable the USB reset interrupt
@@ -81,7 +81,7 @@ namespace usb::core
 	void detach() noexcept
 	{
 		// Detach from the bus
-		USB.CTRLB &= ~vals::usb::ctrlBAttach;
+		USB.CTRLB &= uint8_t(~vals::usb::ctrlBAttach);
 		// Reset all USB interrupts
 		USB.INTCTRLA &= vals::usb::intCtrlAClearMask;
 		USB.INTCTRLB &= vals::usb::intCtrlBClearMask;
@@ -92,14 +92,14 @@ namespace usb::core
 	}
 
 	void address(const uint8_t value) noexcept { USB.ADDR = value & vals::usb::addressMask; }
-	uint8_t address() noexcept { return USB.ADDR &= ~vals::usb::addressMask; }
+	uint8_t address() noexcept { return USB.ADDR &= uint8_t(~vals::usb::addressMask); }
 
 	void reset()
 	{
 		resetEPs(epReset_t::all);
 
 		// Once we get done, idle the peripheral
-		USB.ADDR &= ~vals::usb::addressMask;
+		USB.ADDR &= uint8_t(~vals::usb::addressMask);
 		usbState = deviceState_t::attached;
 		USB.INTCTRLA |= vals::usb::intCtrlAEnableBusEvent;
 		USB.INTCTRLB |= vals::usb::intCtrlBEnableIOComplete | vals::usb::intCtrlBEnableSetupComplete;
@@ -122,8 +122,9 @@ namespace usb::core
 				endpoint.controllerOut.CTRL &= uint8_t(~vals::usb::usbEPCtrlTypeMask);
 				endpoint.controllerIn.CTRL &= uint8_t(~vals::usb::usbEPCtrlTypeMask);
 				endpoint.controllerOut.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
-				endpoint.controllerOut.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
-					vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
+				endpoint.controllerOut.STATUS &= uint8_t(~(vals::usb::usbEPStatusNotReady |
+					vals::usb::usbEPStatusStall | vals::usb::usbEPStatusIOComplete |
+					vals::usb::usbEPStatusSetupComplete));
 			}
 			else
 			{
@@ -134,8 +135,9 @@ namespace usb::core
 			endpoint.controllerIn.CTRL |= vals::usb::usbEPCtrlItrDisable;
 			endpoint.controllerIn.CTRL &= uint8_t(~vals::usb::usbEPCtrlStall);
 			endpoint.controllerIn.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
-			endpoint.controllerIn.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
-				vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
+			endpoint.controllerIn.STATUS &= uint8_t(~(vals::usb::usbEPStatusNotReady |
+				vals::usb::usbEPStatusStall | vals::usb::usbEPStatusIOComplete |
+				vals::usb::usbEPStatusSetupComplete));
 		}
 
 		for (auto [i, epStatus] : substrate::indexedIterator_t{epStatusControllerIn})
@@ -176,7 +178,7 @@ namespace usb::core
 		const uint8_t offset = 0) noexcept
 	{
 		auto *const inBuffer{static_cast<const uint8_t *>(bufferPtr)};
-		auto *const outBuffer{epBuffer[(endpoint << 1) + 1].data() + offset};
+		auto *const outBuffer{epBuffer[(endpoint << 1U) + 1U].data() + offset};
 		// Copy the data to tranmit from the user buffer
 		if (epStatusControllerIn[endpoint].memoryType() == memory_t::sram)
 		{
@@ -188,16 +190,16 @@ namespace usb::core
 			flash_t<char *> flashBuffer{static_cast<const char *>(bufferPtr)};
 			for (uint8_t i{0}; i < length; ++i)
 			{
-				outBuffer[i] = *flashBuffer;
+				outBuffer[i] = uint8_t(*flashBuffer);
 				++flashBuffer;
 			}
 		}
 		return inBuffer + length;
 	}
 
-	void *recvData(const uint8_t endpoint, void *const bufferPtr, const uint8_t length) noexcept
+	void *recvData(const uint8_t endpoint, void *const bufferPtr, const uint16_t length) noexcept
 	{
-		const auto *const inBuffer{epBuffer[(endpoint << 1)].data()};
+		const auto *const inBuffer{epBuffer[(endpoint << 1U)].data()};
 		auto *const outBuffer{static_cast<uint8_t *>(bufferPtr)};
 		// Copy the received data to the user buffer
 		for (uint8_t i{0}; i < length; ++i)
@@ -240,7 +242,7 @@ namespace usb::core
 		{
 			// Bounds sanity and then adjust how much is left to transfer
 			if (epStatus.transferCount < epBufferSize)
-				return epStatus.transferCount;
+				return uint8_t(epStatus.transferCount);
 			return epBufferSize;
 		}()};
 		epStatus.transferCount -= sendCount;
@@ -260,7 +262,7 @@ namespace usb::core
 				const auto partAmount{[&]() -> uint8_t
 				{
 					auto *const buffer{static_cast<const uint8_t *>(epStatus.memBuffer)};
-					const auto amount{part.length - uint8_t(buffer - begin)};
+					const auto amount{uint8_t(part.length - uint8_t(buffer - begin))};
 					if (amount > sendAmount)
 						return sendAmount;
 					return amount;
@@ -280,20 +282,20 @@ namespace usb::core
 		}
 		// Mark the buffer as ready to send
 		epCtrl.CNT = sendCount;
-		epCtrl.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0);
+		epCtrl.STATUS &= uint8_t(~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0));
 		return !epStatus.transferCount;
 	}
 
 	bool readEPReady(const uint8_t endpoint) noexcept
 	{
 		auto &epCtrl{endpoints[endpoint].controllerOut};
-		return epCtrl.STATUS & (vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
+		return epCtrl.STATUS & uint8_t(vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
 	}
 
 	bool writeEPBusy(const uint8_t endpoint) noexcept
 	{
 		auto &epCtrl{endpoints[endpoint].controllerIn};
-		return !(epCtrl.STATUS & (vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete));
+		return !(epCtrl.STATUS & uint8_t(vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete));
 	}
 
 	void stallEP(const uint8_t endpoint) noexcept
