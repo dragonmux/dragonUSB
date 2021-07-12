@@ -296,6 +296,18 @@ namespace usb::core
 		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
 	}
 
+	bool readEPReady(const uint8_t endpoint) noexcept
+	{
+		auto &epCtrl{endpoints[endpoint].controllerOut};
+		return epCtrl.STATUS & (vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
+	}
+
+	bool writeEPBusy(const uint8_t endpoint) noexcept
+	{
+		auto &epCtrl{endpoints[endpoint].controllerIn};
+		return !(epCtrl.STATUS & (vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete));
+	}
+
 	uint8_t statusEP(const uint8_t endpoint, const endpointDir_t dir) noexcept
 	{
 		auto &epCtrl
