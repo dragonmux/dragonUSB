@@ -92,7 +92,7 @@ namespace usb::core
 	}
 
 	void address(const uint8_t value) noexcept { USB.ADDR = value & vals::usb::addressMask; }
-	uint8_t address() noexcept { return USB.ADDR &= uint8_t(~vals::usb::addressMask); }
+	uint8_t address() noexcept { return USB.ADDR & uint8_t(~vals::usb::addressMask); }
 
 	void reset()
 	{
