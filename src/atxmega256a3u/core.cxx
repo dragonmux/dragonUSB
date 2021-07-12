@@ -284,18 +284,6 @@ namespace usb::core
 		return !epStatus.transferCount;
 	}
 
-	void stallEP(const uint8_t endpoint) noexcept
-	{
-		auto &epCtrl{endpoints[endpoint].controllerIn};
-		epCtrl.CTRL |= vals::usb::usbEPCtrlStall;
-	}
-
-	void pauseWriteEP(const uint8_t endpoint) noexcept
-	{
-		auto &epCtrl{endpoints[endpoint].controllerIn};
-		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
-	}
-
 	bool readEPReady(const uint8_t endpoint) noexcept
 	{
 		auto &epCtrl{endpoints[endpoint].controllerOut};
@@ -306,6 +294,18 @@ namespace usb::core
 	{
 		auto &epCtrl{endpoints[endpoint].controllerIn};
 		return !(epCtrl.STATUS & (vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete));
+	}
+
+	void stallEP(const uint8_t endpoint) noexcept
+	{
+		auto &epCtrl{endpoints[endpoint].controllerIn};
+		epCtrl.CTRL |= vals::usb::usbEPCtrlStall;
+	}
+
+	void pauseWriteEP(const uint8_t endpoint) noexcept
+	{
+		auto &epCtrl{endpoints[endpoint].controllerIn};
+		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
 	}
 
 	uint8_t statusEP(const uint8_t endpoint, const endpointDir_t dir) noexcept
