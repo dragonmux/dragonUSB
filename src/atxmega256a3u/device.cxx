@@ -106,15 +106,16 @@ namespace usb::device
 		{
 			const auto status{endpoints[0].controllerOut.STATUS};
 			if (status & vals::usb::usbEPStatusSetupComplete)
-			{
-				handleSetupPacket();
 				USB.INTFLAGSBCLR = vals::usb::itrStatusSetup;
-			}
+			if (usbCtrlState == ctrlState_t::idle)
+				handleSetupPacket();
 			else
 				handleControllerOutPacket();
 		}
 		else
+		{
 			handleControllerInPacket();
-		endpoints[0].controllerIn.STATUS &= ~vals::usb::usbEPStatusIOComplete;
+			endpoints[0].controllerIn.STATUS &= ~vals::usb::usbEPStatusIOComplete;
+		}
 	}
 } // namespace usb::device
