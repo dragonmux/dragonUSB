@@ -103,8 +103,8 @@ namespace usb::core
 		usbState = deviceState_t::attached;
 		USB.INTCTRLA |= vals::usb::intCtrlAEnableBusEvent;
 		USB.INTCTRLB |= vals::usb::intCtrlBEnableIOComplete | vals::usb::intCtrlBEnableSetupComplete;
-		endpoints[0].controllerOut.CTRL &= ~vals::usb::usbEPCtrlItrDisable;
-		endpoints[0].controllerIn.CTRL &= ~vals::usb::usbEPCtrlItrDisable;
+		endpoints[0].controllerOut.CTRL &= uint8_t(~vals::usb::usbEPCtrlItrDisable);
+		endpoints[0].controllerIn.CTRL &= uint8_t(~vals::usb::usbEPCtrlItrDisable);
 		USB.INTFLAGSACLR = vals::usb::itrStatusReset;
 	}
 
@@ -116,23 +116,23 @@ namespace usb::core
 				continue;
 
 			endpoint.controllerOut.CTRL |= vals::usb::usbEPCtrlItrDisable;
-			endpoint.controllerOut.CTRL &= ~vals::usb::usbEPCtrlStall;
+			endpoint.controllerOut.CTRL &= uint8_t(~vals::usb::usbEPCtrlStall);
 			if (i != 0)
 			{
-				endpoint.controllerOut.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
-				endpoint.controllerIn.CTRL &= ~vals::usb::usbEPCtrlTypeMask;
+				endpoint.controllerOut.CTRL &= uint8_t(~vals::usb::usbEPCtrlTypeMask);
+				endpoint.controllerIn.CTRL &= uint8_t(~vals::usb::usbEPCtrlTypeMask);
 				endpoint.controllerOut.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
 				endpoint.controllerOut.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
 					vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
 			}
 			else
 			{
-				endpoint.controllerOut.STATUS &= ~vals::usb::usbEPStatusNACK0;
+				endpoint.controllerOut.STATUS &= uint8_t(~vals::usb::usbEPStatusNACK0);
 				endpoint.controllerOut.STATUS |= vals::usb::usbEPStatusNACK1;
 			}
 
 			endpoint.controllerIn.CTRL |= vals::usb::usbEPCtrlItrDisable;
-			endpoint.controllerIn.CTRL &= ~vals::usb::usbEPCtrlStall;
+			endpoint.controllerIn.CTRL &= uint8_t(~vals::usb::usbEPCtrlStall);
 			endpoint.controllerIn.STATUS |= vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
 			endpoint.controllerIn.STATUS &= ~(vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusStall |
 				vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
