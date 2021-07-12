@@ -126,7 +126,10 @@ namespace usb::core
 					vals::usb::usbEPStatusIOComplete | vals::usb::usbEPStatusSetupComplete);
 			}
 			else
-				endpoint.controllerOut.STATUS &= ~(vals::usb::usbEPStatusNACK0);
+			{
+				endpoint.controllerOut.STATUS &= ~vals::usb::usbEPStatusNACK0;
+				endpoint.controllerOut.STATUS |= vals::usb::usbEPStatusNACK1;
+			}
 
 			endpoint.controllerIn.CTRL |= vals::usb::usbEPCtrlItrDisable;
 			endpoint.controllerIn.CTRL &= ~vals::usb::usbEPCtrlStall;
@@ -221,7 +224,7 @@ namespace usb::core
 		epStatus.memBuffer = recvData(endpoint, epStatus.memBuffer, readCount);
 		// Mark the recv buffer contents as done with
 		epCtrl.CNT = 0;
-		epCtrl.STATUS = 0;
+		epCtrl.STATUS &= (vals::usb::usbEPStatusNACK1 | vals::usb::usbEPStatusDTS);
 		return !epStatus.transferCount;
 	}
 
