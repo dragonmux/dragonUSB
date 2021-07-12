@@ -7,13 +7,14 @@
 
 namespace usb::core::internal
 {
-	struct [[gnu::packed]] endpointCtrl_t final
+	struct endpointCtrl_t final
 	{
 		static_assert(sizeof(::USB_EP_t) == 8);
 
 		::USB_EP_t controllerOut;
 		::USB_EP_t controllerIn;
 	};
+	static_assert(sizeof(endpointCtrl_t) == sizeof(::USB_EP_t) * 2U);
 
 	extern std::array<endpointCtrl_t, endpointCount> endpoints;
 } // namespace usb::core::internal
