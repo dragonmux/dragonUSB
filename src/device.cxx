@@ -53,9 +53,10 @@ namespace usb::device
 	answer_t handleGetDescriptor() noexcept
 	{
 		using namespace usb::descriptors;
-		if (packet.requestType.dir() == endpointDir_t::controllerOut ||
-			packet.requestType.recipient() != setupPacket::recipient_t::device)
+		if (packet.requestType.dir() == endpointDir_t::controllerOut)
 			return {response_t::stall, nullptr, 0};
+		else if (packet.requestType.recipient() != setupPacket::recipient_t::device)
+			return {response_t::unhandled, nullptr, 0};
 		const auto descriptor = packet.value.asDescriptor();
 
 		switch (descriptor.type)
