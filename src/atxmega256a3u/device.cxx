@@ -53,12 +53,12 @@ namespace usb::device
 		const auto endpointNumber{uint8_t(endpoint.endpointAddress & usb::descriptors::endpointDirMask)};
 		auto &epCtrl
 		{
-			[direction](endpointCtrl_t &endpoint) -> USB_EP_t &
+			[direction](endpointCtrl_t &endpointCtrl) -> USB_EP_t &
 			{
 				if (direction == endpointDir_t::controllerIn)
-					return endpoint.controllerIn;
+					return endpointCtrl.controllerIn;
 				else
-					return endpoint.controllerOut;
+					return endpointCtrl.controllerOut;
 			}(endpoints[endpointNumber])
 		};
 
@@ -115,7 +115,7 @@ namespace usb::device
 		else
 		{
 			handleControllerInPacket();
-			endpoints[0].controllerIn.STATUS &= ~vals::usb::usbEPStatusIOComplete;
+			endpoints[0].controllerIn.STATUS &= uint8_t(~vals::usb::usbEPStatusIOComplete);
 		}
 	}
 } // namespace usb::device
