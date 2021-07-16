@@ -1,0 +1,16 @@
+extraction:
+  cpp:
+    after_prepare:
+      - PATH="$HOME/.local/bin:$PATH"
+      - pip3 install --upgrade setuptools wheel
+      - pip3 install --upgrade meson
+    configure:
+      command:
+        - meson build-tiva-c --cross-file cross-files/arm-none-eabi-system.meson --cross-file cross-files/arm-none-eabi.meson -Db_lto=false -Dchip=tm4c123gh6pm
+        - meson build-atxmega --cross-file cross-files/avr-system.meson --cross-file cross-files/avr.meson -Db_lto=false -Dchip=atxmega256a3u
+    index:
+      build_command:
+        - ninja -C build-tiva-c
+        - ninja -C build-atxmega
+queries:
+  - include: "*"
