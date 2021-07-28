@@ -110,6 +110,14 @@ namespace usb::dfu
 				if (packet.requestType.dir() == endpointDir_t::controllerIn)
 					return {response_t::stall, nullptr, 0};
 				return handleDownload();
+			case types::request_t::upload:
+				if (packet.requestType.dir() == endpointDir_t::controllerOut ||
+					packet.length > buffer.size() ||
+					flashState.readAddr + packet.length > flashState.endAddr)
+					return {response_t::stall, nullptr, 0};
+				std::memcpy(buffer.data(), reinterpret_cast<void *>(flashState.readAddr), packet.length);
+				flashState.readAddr += packet.length;
+				return {response_t::data, buffer.data(), packet.length};
 			case types::request_t::getStatus:
 				if (packet.requestType.dir() == endpointDir_t::controllerOut)
 					return {response_t::stall, nullptr, 0};
