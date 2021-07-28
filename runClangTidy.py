@@ -36,5 +36,5 @@ returncode = 0
 with ThreadPoolExecutor() as pool:
 	for file in gatherFiles():
 		futures.append(pool.submit(run, ['clang-tidy'] + extraArgs + ['-p', args.buildPath, file]))
-	returncode = max((future.result().returncode for future in futures))
+	returncode = max((future.result().returncode for future in futures)) if futures else 2
 exit(returncode)
