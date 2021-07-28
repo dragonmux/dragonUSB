@@ -69,13 +69,13 @@ namespace usb::dfu
 	{
 		if (packet.length)
 		{
-			if (flashState.eraseAddr + packet.length >= flashState.endAddr ||
-				packet.length > flashPageSize)
+			if (packet.length > buffer.size() ||
+				flashState.eraseAddr + packet.length > flashState.endAddr)
 				return {response_t::stall, nullptr, 0};
 
 			flashState.op = flashOp_t::erase;
 			erase(flashState.eraseAddr);
-			flashState.eraseAddr += flashPageSize;
+			flashState.eraseAddr += buffer.size();
 			flashState.offset = 0;
 			flashState.byteCount = packet.length;
 
