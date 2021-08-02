@@ -32,10 +32,10 @@ namespace usb::core
 
 		for (auto [i, endpoint] : substrate::indexedIterator_t{endpoints})
 		{
-			endpoint.controllerOut.DATAPTR = reinterpret_cast<std::uintptr_t>(epBuffer[i << 1U].data());
+			endpoint.controllerOut.DATAPTR = reinterpret_cast<uint16_t>(epBuffer[i << 1U].data());
 			endpoint.controllerOut.CNT = 0;
 			endpoint.controllerOut.STATUS = vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
-			endpoint.controllerIn.DATAPTR = reinterpret_cast<std::uintptr_t>(epBuffer[(i << 1U) + 1U].data());
+			endpoint.controllerIn.DATAPTR = reinterpret_cast<uint16_t>(epBuffer[(i << 1U) + 1U].data());
 			endpoint.controllerIn.CNT = 0;
 			endpoint.controllerIn.STATUS = vals::usb::usbEPStatusNACK0 | vals::usb::usbEPStatusNACK1;
 			if (i)
