@@ -54,7 +54,7 @@ namespace usb::core
 			}
 		}
 
-		USB.EPPTR = reinterpret_cast<std::uintptr_t>(endpoints.data());
+		USB.EPPTR = reinterpret_cast<uint16_t>(endpoints.data());
 
 		// Initialise the state machine
 		usbState = deviceState_t::detached;
