@@ -339,7 +339,13 @@ namespace usb::device
 				// If we now have all the data for the transaction..
 				epStatusControllerIn[0].needsArming(true);
 				writeEP(0);
-				usbCtrlState = ctrlState_t::statusTX;
+				if (setupCallback)
+				{
+					setupCallback();
+					setupCallback = nullptr;
+				}
+				//usbCtrlState = ctrlState_t::statusTX;
+				usbCtrlState = ctrlState_t::idle;
 			}
 		}
 		// If we're in the status phase
@@ -363,8 +369,8 @@ namespace usb::device
 			if (writeEP(0))
 			{
 				// If we now have all the data for the transaction..
-				//usbCtrlState = ctrlState_t::statusRX;
-				usbCtrlState = ctrlState_t::idle;
+				usbCtrlState = ctrlState_t::statusRX;
+				//usbCtrlState = ctrlState_t::idle;
 			}
 		}
 		// Otherwise this was a status phase TX-complete interrupt
