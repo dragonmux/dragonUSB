@@ -60,6 +60,7 @@ if 'dfu' in get_option('drivers')
 	buildDefs += [
 		'-DUSB_DFU_FLASH_PAGE_SIZE=@0@'.format(get_option('dfuFlashPageSize')),
 		'-DUSB_DFU_FLASH_BUFFER_SIZE=@0@'.format(get_option('dfuFlashBufferSize')),
+		'-DUSB_DFU_FLASH_ERASE_SIZE=@0@'.format(get_option('dfuFlashEraseSize')),
 	]
 endif
 

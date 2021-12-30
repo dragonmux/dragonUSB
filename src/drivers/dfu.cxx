@@ -63,7 +63,7 @@ namespace usb::dfu
 		reboot();
 	}
 
-	void downloadStepDone() noexcept { config.state = dfuState_t::downloadSync; }
+	void downloadStepDone() noexcept { config.state = dfuState_t::downloadBusy; }
 
 	static answer_t handleDownload() noexcept
 	{
@@ -75,7 +75,7 @@ namespace usb::dfu
 
 			flashState.op = flashOp_t::erase;
 			erase(flashState.eraseAddr);
-			flashState.eraseAddr += buffer.size();
+			flashState.eraseAddr += flashEraseSize;
 			flashState.offset = 0;
 			flashState.byteCount = packet.length;
 
@@ -83,6 +83,7 @@ namespace usb::dfu
 			epStatus.memBuffer = buffer.data();
 			epStatus.transferCount = packet.length;
 			epStatus.needsArming(true);
+			config.state = dfuState_t::downloadIdle;
 			setupCallback = downloadStepDone;
 		}
 		else
@@ -121,6 +122,8 @@ namespace usb::dfu
 			case types::request_t::getStatus:
 				if (packet.requestType.dir() == endpointDir_t::controllerOut)
 					return {response_t::stall, nullptr, 0};
+				if (config.state == dfuState_t::downloadSync)
+					config.state = dfuState_t::downloadIdle;
 				return {response_t::data, &config, sizeof(config)};
 			case types::request_t::clearStatus:
 				if (packet.requestType.dir() == endpointDir_t::controllerIn)
@@ -149,17 +152,24 @@ namespace usb::dfu
 	{
 		if (flashState.op == flashOp_t::none || flashBusy())
 			return;
-		else if (flashState.op == flashOp_t::erase &&
-			flashState.endAddr >= flashState.writeAddr + flashState.byteCount)
-			flashState.op = flashOp_t::write;
-		if (flashState.op == flashOp_t::write && config.state == dfuState_t::downloadSync)
+		else if (flashState.op == flashOp_t::erase)
+		{
+			if (flashState.eraseAddr < flashState.writeAddr + flashState.byteCount)
+			{
+				erase(flashState.eraseAddr);
+				flashState.eraseAddr += flashEraseSize;
+			}
+			else if (flashState.endAddr >= flashState.writeAddr + flashState.byteCount)
+				flashState.op = flashOp_t::write;
+		}
+		if (flashState.op == flashOp_t::write && config.state == dfuState_t::downloadBusy)
 		{
 			if (flashState.offset == flashState.byteCount)
 			{
 				flashState.op = flashOp_t::none;
 				flashState.offset = 0;
 				flashState.byteCount = 0;
-				config.state = dfuState_t::downloadIdle;
+				config.state = dfuState_t::downloadSync;
 			}
 			else
 			{
