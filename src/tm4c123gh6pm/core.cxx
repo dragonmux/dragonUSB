@@ -252,7 +252,8 @@ namespace usb::core
 		// Mark the FIFO contents as done with
 		if (endpoint == 0U)
 		{
-			if (epStatus.transferCount || usbCtrlState == ctrlState_t::idle || usbCtrlState == ctrlState_t::statusRX)
+			// If we aren't at the end of the transfer or we aren't in dataRX mode, never set the data end bit.
+			if (epStatus.transferCount || usbCtrlState != ctrlState_t::dataRX)
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr;
 			else
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::epStatusCtrlLRxReadyClr | vals::usb::epStatusCtrlLDataEnd;
@@ -356,7 +357,8 @@ namespace usb::core
 		// Mark the FIFO contents as done with
 		if (endpoint == 0U)
 		{
-			if (epStatus.transferCount || usbCtrlState == ctrlState_t::statusTX)
+			// If we aren't at the end of the transfer or we're not in the data phase, never set the data end bit
+			if (epStatus.transferCount || usbCtrlState != ctrlState_t::dataTX)
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady;
 			else
 				usbCtrl.ep0Ctrl.statusCtrlL |= vals::usb::ep0StatusCtrlLTxReady | vals::usb::epStatusCtrlLDataEnd;

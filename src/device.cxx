@@ -254,20 +254,14 @@ namespace usb::device
 		// We have a valid response
 		else
 		{
-			// Is this as part of a multi-part transaction?
-			if (packet.requestType.dir() == endpointDir_t::controllerIn)
-				// <SETUP[0]><IN[1]><IN[0]>...<OUT[1]>
-				usbCtrlState = ctrlState_t::dataTX;
-			// Or just a quick answer?
-			else
-				//  <SETUP[0]><IN[1]>
-				usbCtrlState = ctrlState_t::statusTX;
+			usbCtrlState = ctrlState_t::dataTX;
 			if (writeEP(0)/* || (!writeEPBusy(0) && writeEP(0))*/)
 			{
-				if (usbCtrlState == ctrlState_t::dataTX)
-					usbCtrlState = ctrlState_t::statusRX;
-				else
-					usbCtrlState = ctrlState_t::idle;
+				// Is this a quick answer? (eg, ZLP)
+				// <SETUP[0]><IN[1]>
+				// Or as part of an already-completed multi-part transaction?
+				// <SETUP[0]><IN[1]><IN[0]>...<OUT[1]>
+				usbCtrlState = ctrlState_t::statusRX;
 			}
 		}
 	}
@@ -338,8 +332,8 @@ namespace usb::device
 			{
 				// If we now have all the data for the transaction..
 				epStatusControllerIn[0].needsArming(true);
-				writeEP(0);
 				usbCtrlState = ctrlState_t::statusTX;
+				writeEP(0);
 				if (setupCallback)
 				{
 					setupCallback();
