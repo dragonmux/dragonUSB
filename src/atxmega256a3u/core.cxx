@@ -304,7 +304,7 @@ namespace usb::core
 		epCtrl.CTRL |= vals::usb::usbEPCtrlStall;
 	}
 
-	void pauseWriteEP(const uint8_t endpoint) noexcept
+	void flushWriteEP(const uint8_t endpoint) noexcept
 	{
 		auto &epCtrl{endpoints[endpoint].controllerIn};
 		epCtrl.STATUS |= vals::usb::usbEPStatusNotReady | vals::usb::usbEPStatusNACK0;
