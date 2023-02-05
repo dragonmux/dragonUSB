@@ -396,6 +396,21 @@ namespace usb::core
 			usbCtrl.epCtrls[endpoint - 1U].rxStatusCtrlL |= vals::usb::epStatusCtrlLStall;
 	}
 
+	void flushWriteEP(const uint8_t endpoint) noexcept
+	{
+		if (endpoint != 0)
+		{
+			auto &epCtrl{usbCtrl.epCtrls[endpoint - 1U]};
+			// Disarm the endpoint
+			epCtrl.txStatusCtrlL &= uint8_t(~vals::usb::epStatusCtrlLTxReady);
+			// Flush the FIFO
+			while (epCtrl.txStatusCtrlL & vals::usb::epStatusCtrlLTxFIFONotEmpty)
+				epCtrl.txStatusCtrlL |= vals::usb::epStatusCtrlLTxFIFOFlush;
+			// Clear the interrupt status that the above causes
+			usbCtrl.txIntStatus &= uint16_t(~(1U << endpoint));
+		}
+	}
+
 	void processEndpoints(const uint16_t rxStatus, const uint16_t txStatus) noexcept
 	{
 		for (const auto &endpoint : substrate::indexSequence_t{endpointCount})
