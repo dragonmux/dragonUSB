@@ -405,9 +405,7 @@ namespace usb::core
 			epCtrl.txStatusCtrlL &= uint8_t(~vals::usb::epStatusCtrlLTxReady);
 			// Flush the FIFO
 			while (epCtrl.txStatusCtrlL & vals::usb::epStatusCtrlLTxFIFONotEmpty)
-				epCtrl.txStatusCtrlL |= vals::usb::epStatusCtrlLTxFIFOFlush;
-			// Clear the interrupt status that the above causes
-			usbCtrl.txIntStatus &= uint16_t(~(1U << endpoint));
+				epCtrl.txStatusCtrlL = vals::usb::epStatusCtrlLTxFIFOFlush;
 		}
 	}
 
