@@ -132,7 +132,8 @@ namespace usb::types
 #endif
 		}
 
-		memory_t memoryType() const noexcept { return (value & 0x10U) ? memory_t::flash : memory_t::sram; }
+		[[nodiscard]] memory_t memoryType() const noexcept
+			{ return (value & 0x10U) ? memory_t::flash : memory_t::sram; }
 		void resetStatus() noexcept { value = 0; }
 	};
 
