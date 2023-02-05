@@ -83,9 +83,9 @@ namespace usb::types
 		uint8_t value{};
 
 	public:
-		buffer_t *memBuffer{nullptr};
 		usbEP_t ctrl{};
 		uint16_t transferCount{};
+		buffer_t *memBuffer{nullptr};
 		// Multi-part fields
 		uint8_t partNumber{};
 		usb::descriptors::usbMultiPartTable_t partsData{};
