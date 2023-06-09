@@ -27,6 +27,17 @@ if chip.startswith('tm4c')
 		compile_args: true,
 		includes: true
 	)
+elif chip.startswith('stm32')
+	platform = subproject(
+		'dragonSTM32',
+		required: true,
+		version: '>=0.0.1',
+	).get_variable(
+		'dragonSTM32_dep'
+	).partial_dependency(
+		compile_args: true,
+		includes: true
+	)
 elif chip.startswith('atxmega')
 	platform = subproject(
 		'dragonAVR',

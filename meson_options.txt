@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
-option('chip', type: 'combo', description: 'Which chip you wish to target',
-	choices: ['unknown', 'tm4c123gh6pm', 'atxmega256a3u'])
+option(
+	'chip', type: 'combo', description: 'Which chip you wish to target', choices:
+	[
+		'unknown',
+		'tm4c123gh6pm',
+		'stm32f1',
+		'atxmega256a3u'
+	]
+)
 
 option('interfaces', type: 'integer', min: 1, max: 32, value: 1,
 	description: 'The number of interfaces you need')
