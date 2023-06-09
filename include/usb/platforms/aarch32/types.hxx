@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_PLATFORMS_TM4C123GH6PM_TYPES___HXX
-#define USB_PLATFORMS_TM4C123GH6PM_TYPES___HXX
+#ifndef USB_PLATFORMS_AARCH32_TYPES_HXX
+#define USB_PLATFORMS_AARCH32_TYPES_HXX
 
 #include "usb/descriptors.hxx"
 
@@ -46,4 +46,4 @@ namespace usb::descriptors
 	extern const std::array<usbMultiPartTable_t, stringCount> strings;
 } // namespace usb::descriptors
 
-#endif /*USB_PLATFORMS_TM4C123GH6PM_TYPES___HXX*/
+#endif /*USB_PLATFORMS_AARCH32_TYPES_HXX*/
