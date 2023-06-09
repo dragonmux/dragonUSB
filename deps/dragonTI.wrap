@@ -1,4 +1,4 @@
 [wrap-git]
-url = https://github.com/DX-MON/dragonTI.git
+url = https://github.com/dragonmux/dragonTI
 revision = head
 clone-recursive = false
