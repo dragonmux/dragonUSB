@@ -129,4 +129,36 @@ namespace usb::core
 		usbCtrl.ctrl = (usbCtrl.ctrl & ~vals::usb::controlSuspendItrEn) | vals::usb::controlWakeupItrEn;
 		usbSuspended = true;
 	}
+
+	void handleIRQ() noexcept
+	{
+		const auto status{usbCtrl.intStatus & vals::usb::itrStatusMask};
+		usbCtrl.intStatus &= vals::usb::itrStatusClearMask;
+
+		if (usbState == deviceState_t::attached)
+		{
+			usbCtrl.ctrl |= vals::usb::controlSuspendItrEn;
+			usbState = deviceState_t::powered;
+		}
+
+		if (status & vals::usb::itrStatusWakeup)
+			wakeup();
+		else if (usbSuspended)
+			return;
+
+		if (status & vals::usb::itrStatusReset)
+		{
+			reset();
+			usbState = deviceState_t::waiting;
+			return;
+		}
+
+		if (status & vals::usb::itrStatusSuspend)
+			suspend();
+
+		if (usbState == deviceState_t::detached ||
+			usbState == deviceState_t::attached ||
+			usbState == deviceState_t::powered)
+			return;
+	}
 }
