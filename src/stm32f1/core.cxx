@@ -84,4 +84,22 @@ namespace usb::core
 	}
 
 	uint8_t address() noexcept { return usbCtrl.address & vals::usb::addressMask; }
+
+	void wakeup() noexcept
+	{
+		usbSuspended = false;
+		// Clear forced suspend (low-power mode is already cancelled at this point by hardware)
+		usbCtrl.ctrl &= ~vals::usb::controlForceSuspend;
+		// Switch over the interrupt source being used
+		usbCtrl.ctrl = (usbCtrl.ctrl & ~vals::usb::controlWakeupItrEn) | vals::usb::controlSuspendItrEn;
+	}
+
+	void suspend() noexcept
+	{
+		// Suspend the controller, setting it in low power mode
+		usbCtrl.ctrl |= vals::usb::controlForceSuspend | vals::usb::controlLowPowerMode;
+		// Switch o ver the interrupt source being used
+		usbCtrl.ctrl = (usbCtrl.ctrl & ~vals::usb::controlSuspendItrEn) | vals::usb::controlWakeupItrEn;
+		usbSuspended = true;
+	}
 }
