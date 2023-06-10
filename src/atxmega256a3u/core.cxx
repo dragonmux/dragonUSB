@@ -139,26 +139,7 @@ namespace usb::core
 				vals::usb::usbEPStatusStall | vals::usb::usbEPStatusIOComplete |
 				vals::usb::usbEPStatusSetupComplete));
 		}
-
-		for (auto [i, epStatus] : substrate::indexedIterator_t{epStatusControllerIn})
-		{
-			if (what == epReset_t::user && i == 0)
-				continue;
-			epStatus.resetStatus();
-			epStatus.transferCount = 0;
-			epStatus.ctrl.endpoint(uint8_t(i));
-			epStatus.ctrl.dir(endpointDir_t::controllerIn);
-		}
-
-		for (auto [i, epStatus] : substrate::indexedIterator_t{epStatusControllerOut})
-		{
-			if (what == epReset_t::user && i == 0)
-				continue;
-			epStatus.resetStatus();
-			epStatus.transferCount = 0;
-			epStatus.ctrl.endpoint(uint8_t(i));
-			epStatus.ctrl.dir(endpointDir_t::controllerOut);
-		}
+		usb::core::common::resetEPs(what);
 	}
 
 	void wakeup()

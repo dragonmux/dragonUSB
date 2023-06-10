@@ -139,7 +139,7 @@ namespace usb::core
 		// Really enable the double-buffers as apparently this isn't done just by the above.
 		usbCtrl.txPacketDoubleBuffEnable |= vals::usb::txPacketDoubleBuffEnableEP1;
 		usbCtrl.rxPacketDoubleBuffEnable |= vals::usb::rxPacketDoubleBuffEnableEP1;
-		resetEPs(epReset_t::all);
+		usb::core::common::resetEPs(what);
 
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0;
@@ -149,29 +149,6 @@ namespace usb::core
 		usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
 		usbCtrl.txIntEnable |= vals::usb::txItrEnableEP0;
 		usb::device::activeConfig = 0;
-	}
-
-	void resetEPs(const epReset_t what) noexcept
-	{
-		for (auto [i, epStatus] : substrate::indexedIterator_t{epStatusControllerIn})
-		{
-			if (what == epReset_t::user && i == 0)
-				continue;
-			epStatus.resetStatus();
-			epStatus.transferCount = 0;
-			epStatus.ctrl.endpoint(uint8_t(i));
-			epStatus.ctrl.dir(endpointDir_t::controllerIn);
-		}
-
-		for (auto [i, epStatus] : substrate::indexedIterator_t{epStatusControllerOut})
-		{
-			if (what == epReset_t::user && i == 0)
-				continue;
-			epStatus.resetStatus();
-			epStatus.transferCount = 0;
-			epStatus.ctrl.endpoint(uint8_t(i));
-			epStatus.ctrl.dir(endpointDir_t::controllerOut);
-		}
 	}
 
 	void cycleBus() noexcept

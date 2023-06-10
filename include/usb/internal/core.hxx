@@ -21,4 +21,9 @@ namespace usb::core::internal
 	extern std::array<sofHandler_t, interfaceCount> sofHandlers;
 } // namespace usb::core::internal
 
+namespace usb::core::common
+{
+	void resetEPs(epReset_t what) noexcept;
+} // namespace usb::core::common
+
 #endif /*USB_INTERNAL_CORE___HXX*/
