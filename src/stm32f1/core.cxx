@@ -27,6 +27,7 @@ namespace usb::core
 
 		// Set up the port pins used by the USB controller so they're in the right modes
 		// with the USB controller connected through.
+		vals::gpio::clear(gpioA, vals::gpio_t::pin8);
 		vals::gpio::config<vals::gpio_t::pin8>(gpioA, vals::gpio::mode_t::input, vals::gpio::config_t::inputFloating);
 
 		// Having configured the pins, we now need to set up the USB controller
@@ -36,14 +37,32 @@ namespace usb::core
 		usbCtrl.bufferTablePtr = 0;
 		usbCtrl.intStatus &= vals::usb::itrStatusClearMask;
 
-		// Enable interrupts used by the implementation
-		usbCtrl.ctrl |= vals::usb::controlResetItrEn | vals::usb::controlCorrectXferItrEn |
-			vals::usb::controlSuspendItrEn | vals::usb::controlWakeupItrEn;
+		// Enable the USB NVIC slot we use
+		nvic.enableInterrupt(vals::irqs::usbLowPriority);
 
 		// Initialise the state machine
 		usbState = deviceState_t::detached;
 		usbCtrlState = ctrlState_t::idle;
 		usbDeferalFlags = 0;
+	}
+
+	void attach() noexcept
+	{
+		// Reset all USB interrupts
+		usbCtrl.ctrl &= vals::usb::controlItrMask;
+		// And their flags
+		usbCtrl.intStatus &= vals::usb::itrStatusClearMask;
+
+		// Ensure the device address is 0
+		usbCtrl.address = 0 | vals::usb::addressUSBEnable;
+		// Ensure we're in the unconfigured configuration
+		usb::device::activeConfig = 0;
+		// Ensure we can respond to reset interrupts
+		usbCtrl.ctrl |= vals::usb::controlResetItrEn;
+		// Attach to the bus
+		vals::gpio::set(gpioA, vals::gpio_t::pin8);
+		vals::gpio::config<vals::gpio_t::pin8>(gpioA, vals::gpio::mode_t::output2MHz,
+			vals::gpio::config_t::outputNormalPushPull);
 	}
 
 	void address(const uint8_t value) noexcept
