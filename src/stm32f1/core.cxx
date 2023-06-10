@@ -65,6 +65,18 @@ namespace usb::core
 			vals::gpio::config_t::outputNormalPushPull);
 	}
 
+	void detach() noexcept
+	{
+		// Detach from the bus
+		usbCtrl.address = 0;
+		// Reset all USB interrupts
+		usbCtrl.ctrl &= vals::usb::controlItrMask;
+		// Ensure that the current configuration is torn down
+		deinitHandlers();
+		// Switch to the unconfigured configuration
+		usb::device::activeConfig = 0;
+	}
+
 	void address(const uint8_t value) noexcept
 	{
 		usbCtrl.address = (usbCtrl.address & vals::usb::addressClrMask) |
