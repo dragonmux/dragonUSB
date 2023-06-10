@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_PLATFORMS_TYPES___HXX
-#define USB_PLATFORMS_TYPES___HXX
+#ifndef USB_PLATFORMS_TYPES_HXX
+#define USB_PLATFORMS_TYPES_HXX
 
 #include <cstdint>
 
@@ -29,4 +29,4 @@ namespace usb::descriptors
 #define USB_MEM_SEGMENTED
 #endif
 
-#endif /*USB_PLATFORMS_TYPES___HXX*/
+#endif /*USB_PLATFORMS_TYPES_HXX*/

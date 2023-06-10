@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_CONSTANTS___HXX
-#define USB_CONSTANTS___HXX
+#ifndef USB_CONSTANTS_HXX
+#define USB_CONSTANTS_HXX
 
 #include <cstdint>
 
@@ -16,4 +16,4 @@ namespace usb::constants
 	constexpr static uint8_t stringCount{USB_STRINGS};
 } // namespace ubs::constants
 
-#endif /*USB_CONSTANTS___HXX*/
+#endif /*USB_CONSTANTS_HXX*/

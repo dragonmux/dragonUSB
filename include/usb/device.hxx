@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_DEVICE___HXX
-#define USB_DEVICE___HXX
+#ifndef USB_DEVICE_HXX
+#define USB_DEVICE_HXX
 
 #include <cstdint>
 #include <cstring>
@@ -171,4 +171,4 @@ namespace usb::device
 	extern void unregisterAltModeHandler(uint8_t interface, uint8_t config) noexcept;
 } // namespace usb::device
 
-#endif /*USB_DEVICE___HXX*/
+#endif /*USB_DEVICE_HXX*/

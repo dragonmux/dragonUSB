@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_CORE___HXX
-#define USB_CORE___HXX
+#ifndef USB_CORE_HXX
+#define USB_CORE_HXX
 
 #include "usb/constants.hxx"
 #include "usb/types.hxx"
@@ -48,4 +48,4 @@ namespace usb::core
 	extern void unregsiterSOFHandler(uint16_t interface) noexcept;
 } // namespace usb::core
 
-#endif /*USB_CORE___HXX*/
+#endif /*USB_CORE_HXX*/

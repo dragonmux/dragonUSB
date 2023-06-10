@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_PLATFORM___HXX
-#define USB_PLATFORM___HXX
+#ifndef USB_PLATFORM_HXX
+#define USB_PLATFORM_HXX
 
 #if defined(TM4C123GH6PM)
 #include <tm4c123gh6pm/platform.hxx>
@@ -14,4 +14,4 @@
 #define USB_MEM_SEGMENTED
 #endif
 
-#endif /*USB_PLATFORM___HXX*/
+#endif /*USB_PLATFORM_HXX*/
