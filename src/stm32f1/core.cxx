@@ -2,6 +2,7 @@
 #include "usb/platform.hxx"
 #include "usb/internal/core.hxx"
 #include "usb/device.hxx"
+#include <substrate/index_sequence>
 
 /*!
  * USB pinout:
@@ -84,6 +85,32 @@ namespace usb::core
 	}
 
 	uint8_t address() noexcept { return usbCtrl.address & vals::usb::addressMask; }
+
+	void reset() noexcept
+	{
+		// Set up only EP0.
+		resetEPs(epReset_t::all);
+		usbCtrl.epCtrlStat[0] |= vals::usb::epAddress(0) | vals::usb::epCtrlTXNack |
+			vals::usb::epCtrlTypeControl | vals::usb::epCtrlRXValid;
+
+		// Once we get done, idle the peripheral
+		usbCtrl.address = 0;
+		usbState = deviceState_t::attached;
+		usbCtrl.ctrl |= vals::usb::controlSOFItrEn | vals::usb::controlCorrectXferItrEn |
+			vals::usb::controlWakeupItrEn;
+		usb::device::activeConfig = 0;
+	}
+
+	void resetEPs(const epReset_t what) noexcept
+	{
+		for (const auto endpoint : substrate::indexSequence_t{vals::usb::endpoints})
+		{
+			if (what == epReset_t::user && endpoint == 0)
+				continue;
+			usbCtrl.epCtrlStat[endpoint] &= vals::usb::epClearMask;
+		}
+		usb::core::common::resetEPs(what);
+	}
 
 	void wakeup() noexcept
 	{
