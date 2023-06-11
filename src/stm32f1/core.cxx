@@ -400,14 +400,14 @@ namespace usb::core
 			if (epCtrlStat & vals::usb::epStatusRxCorrectXfer)
 			{
 				usbPacket.dir(endpointDir_t::controllerOut);
-				processEndpoint(endpoint);
+				processEndpoint(uint8_t(endpoint));
 				epCtrlStat &= ~vals::usb::epStatusRxCorrectXfer;
 			}
 			// If we've successfully send data
 			if (epCtrlStat & vals::usb::epStatusTxCorrectXfer)
 			{
 				usbPacket.dir(endpointDir_t::controllerIn);
-				processEndpoint(endpoint);
+				processEndpoint(uint8_t(endpoint));
 				epCtrlStat &= ~vals::usb::epStatusTxCorrectXfer;
 			}
 		}
