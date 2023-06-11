@@ -20,6 +20,16 @@ using namespace usb::core::internal;
 
 namespace usb::core
 {
+	namespace internal
+	{
+		auto &epBufferCtrlFor(const uint8_t endpoint)
+		{
+			auto &epTable{*reinterpret_cast<stm32::usbEPTable_t *>(stm32::packetBufferBase +
+				static_cast<uintptr_t>(usbCtrl.bufferTablePtr))};
+			return epTable[endpoint];
+		}
+	} // namespace internal
+
 	void init() noexcept
 	{
 		// Enable the clocks for the USB peripheral
@@ -125,13 +135,11 @@ namespace usb::core
 		void setupEndpoint(const uint8_t endpoint, const usbEndpointType_t type, const uint16_t bufferAddress,
 			const uint16_t bufferLength) noexcept
 		{
-			auto &epTable{*reinterpret_cast<stm32::usbEPTable_t *>(stm32::packetBufferBase +
-				static_cast<uintptr_t>(usbCtrl.bufferTablePtr))};
 			const auto direction{static_cast<endpointDir_t>(endpoint & ~vals::usb::endpointDirMask)};
 			const auto endpointNumber{uint8_t(endpoint & vals::usb::endpointDirMask)};
 
 			auto epCtrl{usbCtrl.epCtrlStat[endpointNumber]};
-			auto &epConfig{epTable[endpointNumber]};
+			auto &epBufferCtrl{internal::epBufferCtrlFor(endpointNumber)};
 
 			// NB: we assume both IN and OUT endpoints have a consistent type here as there are only 8 endpoint
 			// registers and the types are shared between the two halves
@@ -157,14 +165,14 @@ namespace usb::core
 			{
 				epCtrl &= vals::usb::epCtrlTXMask;
 				epCtrl |= vals::usb::epCtrlTXNack;
-				epConfig.txAddress = bufferAddress;
+				epBufferCtrl.txAddress = sizeof(stm32::usbEPTable_t) + bufferAddress;
 			}
 			else
 			{
 				epCtrl &= vals::usb::epCtrlRXMask;
 				epCtrl |= vals::usb::epCtrlRXNack;
-				epConfig.rxAddress = bufferAddress;
-				epConfig.rxCount = vals::usb::rxBufferSize(bufferLength);
+				epBufferCtrl.rxAddress = sizeof(stm32::usbEPTable_t) + bufferAddress;
+				epBufferCtrl.rxCount = vals::usb::rxBufferSize(bufferLength);
 			}
 
 			usbCtrl.epCtrlStat[endpointNumber] = epCtrl;
