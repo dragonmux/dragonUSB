@@ -199,10 +199,17 @@ namespace usb::core
 	{
 		auto &epStatus{epStatusControllerOut[endpoint]};
 		auto &epCtrl{endpoints[endpoint].controllerOut};
-		auto readCount{epCtrl.CNT};
-		// Bounds sanity and then adjust how much is left to transfer
-		if (readCount > epStatus.transferCount)
-			readCount = epStatus.transferCount;
+		const auto readCount
+		{
+			[&]() noexcept -> uint16_t
+			{
+				const auto count{readEPDataAvail(endpoint)};
+				// Bounds sanity and then adjust how much is left to transfer
+				if (count > epStatus.transferCount)
+					return epStatus.transferCount;
+				return count;
+			}()
+		};
 		epStatus.transferCount -= readCount;
 		epStatus.memBuffer = recvData(endpoint, epStatus.memBuffer, readCount);
 		// Mark the recv buffer contents as done with
@@ -219,13 +226,16 @@ namespace usb::core
 	{
 		auto &epStatus{epStatusControllerIn[endpoint]};
 		auto &epCtrl{endpoints[endpoint].controllerIn};
-		const auto sendCount{[&]() noexcept -> uint8_t
+		const auto sendCount
 		{
-			// Bounds sanity and then adjust how much is left to transfer
-			if (epStatus.transferCount < epBufferSize)
-				return uint8_t(epStatus.transferCount);
-			return epBufferSize;
-		}()};
+			[&]() noexcept -> uint8_t
+			{
+				// Bounds sanity and then adjust how much is left to transfer
+				if (epStatus.transferCount < epBufferSize)
+					return uint8_t(epStatus.transferCount);
+				return epBufferSize;
+			}()
+		};
 		epStatus.transferCount -= sendCount;
 
 		if (!epStatus.isMultiPart())
