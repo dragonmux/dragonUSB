@@ -57,42 +57,42 @@ namespace usb::device
 
 	namespace internal
 	{
-	bool handleSetConfiguration() noexcept
-	{
-		usb::core::resetEPs(epReset_t::user);
-		usb::core::deinitHandlers();
-
-		const auto config{packet.value.asConfiguration()};
-		if (config > configsCount)
-			return false;
-		activeConfig = config;
-
-		if (activeConfig == 0)
-			usbState = deviceState_t::addressed;
-		else
+		bool handleSetConfiguration() noexcept
 		{
-			// EP0 consumes the first 256 bytes of USB RAM.
-			uint16_t startAddress{256};
-			usbCtrl.txIntEnable &= vals::usb::txItrEnableMask;
-			usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
-			usbCtrl.txIntEnable |= vals::usb::txItrEnableEP0;
+			usb::core::resetEPs(epReset_t::user);
+			usb::core::deinitHandlers();
 
-			const auto descriptors{configDescriptors[activeConfig - 1U]};
-			for (const auto &part : descriptors)
+			const auto config{packet.value.asConfiguration()};
+			if (config > configsCount)
+				return false;
+			activeConfig = config;
+
+			if (activeConfig == 0)
+				usbState = deviceState_t::addressed;
+			else
 			{
-				const auto *const descriptor{static_cast<const std::byte *>(part.descriptor)};
-				usbDescriptor_t type{usbDescriptor_t::invalid};
-				memcpy(&type, descriptor + 1, 1);
-				if (type == usbDescriptor_t::endpoint)
+				// EP0 consumes the first 256 bytes of USB RAM.
+				uint16_t startAddress{256};
+				usbCtrl.txIntEnable &= vals::usb::txItrEnableMask;
+				usbCtrl.rxIntEnable &= vals::usb::rxItrEnableMask;
+				usbCtrl.txIntEnable |= vals::usb::txItrEnableEP0;
+
+				const auto descriptors{configDescriptors[activeConfig - 1U]};
+				for (const auto &part : descriptors)
 				{
-					const auto endpoint{*static_cast<const usbEndpointDescriptor_t *>(part.descriptor)};
-					setupEndpoint(endpoint, startAddress);
+					const auto *const descriptor{static_cast<const std::byte *>(part.descriptor)};
+					usbDescriptor_t type{usbDescriptor_t::invalid};
+					memcpy(&type, descriptor + 1, 1);
+					if (type == usbDescriptor_t::endpoint)
+					{
+						const auto endpoint{*static_cast<const usbEndpointDescriptor_t *>(part.descriptor)};
+						setupEndpoint(endpoint, startAddress);
+					}
 				}
+				usb::core::initHandlers();
 			}
-			usb::core::initHandlers();
+			return true;
 		}
-		return true;
-	}
 	} // namespace internal
 
 	void handleControlPacket() noexcept
