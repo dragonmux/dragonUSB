@@ -200,9 +200,10 @@ namespace usb::core
 		usbSuspended = true;
 	}
 
-	uint8_t *recvData(volatile const uint16_t *const usbBuffer, uint8_t *const buffer, const uint16_t length) noexcept
+	void *recvData(volatile const uint16_t *const usbBuffer, void *const progBuffer, const uint16_t length) noexcept
 	{
-		for (uint16_t offset = 0; offset < length; offset += 2U)
+		auto *const buffer{static_cast<uint8_t *>(progBuffer)};
+		for (uint16_t offset{0U}; offset < length; offset += 2U)
 		{
 			// Because of how the packet buffer is laid out on the CPU side of the bus, and
 			// because of how the packet buffer is laid out to the USB core, only every other
@@ -218,7 +219,7 @@ namespace usb::core
 
 	uint16_t readEPDataAvail(const uint8_t endpoint) noexcept
 	{
-		auto &epBufferCtrl{internal::epBufferCtrlFor(endpoint)};
+		const auto &epBufferCtrl{internal::epBufferCtrlFor(endpoint)};
 		return epBufferCtrl.rxCount & vals::usb::rxCountByteMask;
 	}
 
@@ -243,8 +244,7 @@ namespace usb::core
 		};
 		epStatus.transferCount -= readCount;
 		// Grab the data associated with this transfer
-		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress),
-			static_cast<uint8_t *>(epStatus.memBuffer), uint16_t(readCount));
+		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress), epStatus.memBuffer, readCount);
 		return !epStatus.transferCount;
 	}
 
