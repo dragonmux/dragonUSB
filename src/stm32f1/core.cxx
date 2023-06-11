@@ -91,8 +91,14 @@ namespace usb::core
 	{
 		// Set up only EP0.
 		resetEPs(epReset_t::all);
-		usbCtrl.epCtrlStat[0] |= vals::usb::epAddress(0) | vals::usb::epCtrlTXNack |
-			vals::usb::epCtrlTypeControl | vals::usb::epCtrlRXValid;
+		// Because of the 512 byte memory limit of the peripheral buffers,
+		// we overlay the TX and RX buffers on each other for EP0.
+		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerOut, 0),
+			usbEndpointType_t::control, 0, 64);
+		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerIn, 0),
+			usbEndpointType_t::control, 0, 64);
+		// Enable the endpoint for receiving SETUP packets
+		usbCtrl.epCtrlStat[0] = (usbCtrl.epCtrlStat[0] & vals::usb::epCtrlRXMask) | vals::usb::epCtrlRXValid;
 
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0;
@@ -109,6 +115,7 @@ namespace usb::core
 			if (what == epReset_t::user && endpoint == 0)
 				continue;
 			usbCtrl.epCtrlStat[endpoint] &= vals::usb::epClearMask;
+			usbCtrl.epCtrlStat[endpoint] |= vals::usb::epAddress(endpoint);
 		}
 		usb::core::common::resetEPs(what);
 	}
