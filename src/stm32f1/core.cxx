@@ -392,5 +392,14 @@ namespace usb::core
 			usbState == deviceState_t::attached ||
 			usbState == deviceState_t::powered)
 			return;
+
+		if (status & vals::usb::itrStatusSOF)
+		{
+			for (const auto &handler : sofHandlers)
+			{
+				if (handler)
+					handler();
+			}
+		}
 	}
 }
