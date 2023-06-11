@@ -225,10 +225,17 @@ namespace usb::core
 	bool readEP(const uint8_t endpoint) noexcept
 	{
 		auto &epStatus{epStatusControllerOut[endpoint]};
-		auto readCount{readEPDataAvail(endpoint)};
-		// Bounds sanity and then adjust how much is left to transfer
-		if (readCount > epStatus.transferCount)
-			readCount = epStatus.transferCount;
+		const auto readCount
+		{
+			[&]() noexcept -> uint16_t
+			{
+				const auto count{readEPDataAvail(endpoint)};
+				// Bounds sanity and then adjust how much is left to transfer
+				if (count > epStatus.transferCount)
+					return epStatus.transferCount;
+				return count;
+			}()
+		};
 		epStatus.transferCount -= readCount;
 		epStatus.memBuffer = recvData(endpoint, static_cast<uint8_t *>(epStatus.memBuffer), uint8_t(readCount));
 		// Mark the FIFO contents as done with
@@ -322,13 +329,16 @@ namespace usb::core
 	bool writeEP(const uint8_t endpoint) noexcept
 	{
 		auto &epStatus{epStatusControllerIn[endpoint]};
-		const auto sendCount{[&]() noexcept -> uint8_t
+		const auto sendCount
 		{
-			// Bounds sanity and then adjust how much is left to transfer
-			if (epStatus.transferCount < epBufferSize)
-				return uint8_t(epStatus.transferCount);
-			return epBufferSize;
-		}()};
+			[&]() noexcept -> uint8_t
+			{
+				// Bounds sanity and then adjust how much is left to transfer
+				if (epStatus.transferCount < epBufferSize)
+					return uint8_t(epStatus.transferCount);
+				return epBufferSize;
+			}()
+		};
 		epStatus.transferCount -= sendCount;
 
 		if (!epStatus.isMultiPart())
