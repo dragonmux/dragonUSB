@@ -107,9 +107,9 @@ namespace usb::core
 		// Because of the 512 byte memory limit of the peripheral buffers,
 		// we overlay the TX and RX buffers on each other for EP0.
 		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerOut, 0),
-			usbEndpointType_t::control, 0, 64);
+			usbEndpointType_t::control, 0, epBufferSize);
 		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerIn, 0),
-			usbEndpointType_t::control, 0, 64);
+			usbEndpointType_t::control, 0, epBufferSize);
 		// Enable the endpoint for receiving SETUP packets
 		usbCtrl.epCtrlStat[0] = (usbCtrl.epCtrlStat[0] & vals::usb::epCtrlRXMask) | vals::usb::epCtrlRXValid;
 
