@@ -28,6 +28,9 @@ namespace usb::core
 				static_cast<uintptr_t>(usbCtrl.bufferTablePtr))};
 			return epTable[endpoint];
 		}
+
+		volatile uint16_t *epBufferPtr(const uint32_t address)
+			{ return reinterpret_cast<volatile uint16_t *>(stm32::packetBufferBase + address); }
 	} // namespace internal
 
 	void init() noexcept
@@ -192,9 +195,44 @@ namespace usb::core
 	{
 		// Suspend the controller, setting it in low power mode
 		usbCtrl.ctrl |= vals::usb::controlForceSuspend | vals::usb::controlLowPowerMode;
-		// Switch o ver the interrupt source being used
+		// Switch over the interrupt source being used
 		usbCtrl.ctrl = (usbCtrl.ctrl & ~vals::usb::controlSuspendItrEn) | vals::usb::controlWakeupItrEn;
 		usbSuspended = true;
+	}
+
+	uint8_t *recvData(volatile const uint16_t *const usbBuffer, uint8_t *const buffer, const uint16_t length) noexcept
+	{
+		for (uint16_t offset = 0; offset < length; offset += 2U)
+		{
+			// Because of how the packet buffer is laid out on the CPU side of the bus, and
+			// because of how the packet buffer is laid out to the USB core, only every other
+			// uint16_t maps to a packet buffer entry.
+			// That is, for every uint32_t visible from the CPU, we access just one uint16_t
+			// of the packet buffer. The USB core writes by uint16_t.
+			const auto data{usbBuffer[offset]};
+			const auto amount{std::min<uint16_t>(2U, length - offset)};
+			std::memcpy(buffer + offset, &data, amount);
+		}
+		return buffer + length;
+	}
+
+	/*!
+	* @returns true when the all the data to be read has been retreived,
+	* false if there is more left to fetch.
+	*/
+	bool readEP(const uint8_t endpoint) noexcept
+	{
+		auto &epStatus{epStatusControllerOut[endpoint]};
+		auto &epBufferCtrl{internal::epBufferCtrlFor(endpoint)};
+		auto readCount{static_cast<uint16_t>(epBufferCtrl.rxCount & vals::usb::rxCountByteMask)};
+		// Bounds sanity and then adjust how much is left to transfer
+		if (readCount > epStatus.transferCount)
+			readCount = epStatus.transferCount;
+		epStatus.transferCount -= readCount;
+		// Grab the data associated with this transfer
+		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress),
+			static_cast<uint8_t *>(epStatus.memBuffer), uint16_t(readCount));
+		return !epStatus.transferCount;
 	}
 
 	void handleIRQ() noexcept
