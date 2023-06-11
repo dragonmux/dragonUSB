@@ -116,8 +116,7 @@ namespace usb::core
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0;
 		usbState = deviceState_t::attached;
-		usbCtrl.ctrl |= vals::usb::controlSOFItrEn | vals::usb::controlCorrectXferItrEn |
-			vals::usb::controlWakeupItrEn;
+		usbCtrl.ctrl |= vals::usb::controlSOFItrEn | vals::usb::controlCorrectXferItrEn | vals::usb::controlWakeupItrEn;
 		usb::device::activeConfig = 0;
 	}
 
@@ -362,6 +361,58 @@ namespace usb::core
 		return !epStatus.transferCount;
 	}
 
+	void processEndpoint(const uint8_t endpoint) noexcept
+	{
+		// If we're EP0, go through the control endpoint machinary
+		if (endpoint == 0U)
+			usb::device::handleControlPacket();
+		// Otherwise go through the normal packet handling
+		else
+		{
+			// Find the handler for this endpoint
+			const auto &handler
+			{
+				[](const size_t config, const size_t index)
+				{
+					if (usbPacket.dir() == endpointDir_t::controllerIn)
+						return inHandlers[config][index];
+					else
+						return outHandlers[config][index];
+				}(usb::device::activeConfig - 1U, endpoint - 1U)
+			};
+			// If there is a callback registered, call it
+			if (handler.handlePacket)
+				handler.handlePacket(uint8_t(endpoint));
+		}
+	}
+
+	void processEndpoints() noexcept
+	{
+		// For each endpoint
+		for (const auto endpoint : substrate::indexSequence_t{endpointCount})
+		{
+			auto &epCtrlStat{usbCtrl.epCtrlStat[endpoint]};
+			// If the endpoint is enabled
+			if (!(epCtrlStat & (vals::usb::epCtrlRXMask | vals::usb::epCtrlTXMask)))
+				continue;
+			usbPacket.endpoint(uint8_t(endpoint));
+			// If there's data waiting to be read
+			if (epCtrlStat & vals::usb::epStatusRxCorrectXfer)
+			{
+				usbPacket.dir(endpointDir_t::controllerOut);
+				processEndpoint(endpoint);
+				epCtrlStat &= ~vals::usb::epStatusRxCorrectXfer;
+			}
+			// If we've successfully send data
+			if (epCtrlStat & vals::usb::epStatusTxCorrectXfer)
+			{
+				usbPacket.dir(endpointDir_t::controllerIn);
+				processEndpoint(endpoint);
+				epCtrlStat &= ~vals::usb::epStatusTxCorrectXfer;
+			}
+		}
+	}
+
 	void handleIRQ() noexcept
 	{
 		const auto status{usbCtrl.intStatus & vals::usb::itrStatusMask};
@@ -401,5 +452,8 @@ namespace usb::core
 					handler();
 			}
 		}
+
+		if (status & vals::usb::itrStatusCorrectXfer)
+			processEndpoints();
 	}
 }
