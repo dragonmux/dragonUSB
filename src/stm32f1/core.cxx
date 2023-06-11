@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "usb/platform.hxx"
 #include "usb/internal/core.hxx"
+#include "usb/platforms/stm32f1/core.hxx"
 #include "usb/device.hxx"
 #include <substrate/index_sequence>
 
@@ -111,6 +112,57 @@ namespace usb::core
 		}
 		usb::core::common::resetEPs(what);
 	}
+
+	namespace internal
+	{
+		void setupEndpoint(const uint8_t endpoint, const usbEndpointType_t type, const uint16_t bufferAddress,
+			const uint16_t bufferLength) noexcept
+		{
+			auto &epTable{*reinterpret_cast<stm32::usbEPTable_t *>(stm32::packetBufferBase +
+				static_cast<uintptr_t>(usbCtrl.bufferTablePtr))};
+			const auto direction{static_cast<endpointDir_t>(endpoint & ~vals::usb::endpointDirMask)};
+			const auto endpointNumber{uint8_t(endpoint & vals::usb::endpointDirMask)};
+
+			auto epCtrl{usbCtrl.epCtrlStat[endpointNumber]};
+			auto &epConfig{epTable[endpointNumber]};
+
+			// NB: we assume both IN and OUT endpoints have a consistent type here as there are only 8 endpoint
+			// registers and the types are shared between the two halves
+			epCtrl &= vals::usb::epCtrlTypeMask;
+			epCtrl |= [&]()
+			{
+				switch (type)
+				{
+					case usbEndpointType_t::control:
+						return vals::usb::epCtrlTypeControl;
+					case usbEndpointType_t::bulk:
+						return vals::usb::epCtrlTypeBulk;
+					case usbEndpointType_t::interrupt:
+						return vals::usb::epCtrlTypeInterrupt;
+					case usbEndpointType_t::isochronous:
+						return vals::usb::epCtrlTypeIsochronous;
+				}
+				// This should never bit hit.. but.. just in case.
+				return vals::usb::epCtrlTypeBulk;
+			}();
+
+			if (direction == endpointDir_t::controllerIn)
+			{
+				epCtrl &= vals::usb::epCtrlTXMask;
+				epCtrl |= vals::usb::epCtrlTXNack;
+				epConfig.txAddress = bufferAddress;
+			}
+			else
+			{
+				epCtrl &= vals::usb::epCtrlRXMask;
+				epCtrl |= vals::usb::epCtrlRXNack;
+				epConfig.rxAddress = bufferAddress;
+				epConfig.rxCount = vals::usb::rxBufferSize(bufferLength);
+			}
+
+			usbCtrl.epCtrlStat[endpointNumber] = epCtrl;
+		}
+	} // namespace internal
 
 	void wakeup() noexcept
 	{
