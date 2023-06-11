@@ -216,6 +216,12 @@ namespace usb::core
 		return buffer + length;
 	}
 
+	uint16_t readEPDataAvail(const uint8_t endpoint) noexcept
+	{
+		auto &epBufferCtrl{internal::epBufferCtrlFor(endpoint)};
+		return epBufferCtrl.rxCount & vals::usb::rxCountByteMask;
+	}
+
 	/*!
 	* @returns true when the all the data to be read has been retreived,
 	* false if there is more left to fetch.
@@ -224,10 +230,17 @@ namespace usb::core
 	{
 		auto &epStatus{epStatusControllerOut[endpoint]};
 		auto &epBufferCtrl{internal::epBufferCtrlFor(endpoint)};
-		auto readCount{static_cast<uint16_t>(epBufferCtrl.rxCount & vals::usb::rxCountByteMask)};
-		// Bounds sanity and then adjust how much is left to transfer
-		if (readCount > epStatus.transferCount)
-			readCount = epStatus.transferCount;
+		const auto readCount
+		{
+			[&]() noexcept -> uint16_t
+			{
+				const auto count{readEPDataAvail(endpoint)};
+				// Bounds sanity and then adjust how much is left to transfer
+				if (count > epStatus.transferCount)
+					return epStatus.transferCount;
+				return count;
+			}()
+		};
 		epStatus.transferCount -= readCount;
 		// Grab the data associated with this transfer
 		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress),
