@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS___HXX
-#define USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS___HXX
+#ifndef USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS_HXX
+#define USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS_HXX
 
 #include <cstdint>
 
@@ -74,4 +74,4 @@ namespace vals::usb
 	constexpr static const uint8_t usbEPStatusStall{0x80};
 } // namespace vals::usb
 
-#endif /*USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS___HXX*/
+#endif /*USB_PLATFORMS_ATXMEGA256A3U_CONSTANTS_HXX*/

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#ifndef USB_PLATFORMS_ATXMEGA256A3U_TYPES___HXX
-#define USB_PLATFORMS_ATXMEGA256A3U_TYPES___HXX
+#ifndef USB_PLATFORMS_ATXMEGA256A3U_TYPES_HXX
+#define USB_PLATFORMS_ATXMEGA256A3U_TYPES_HXX
 
 #include <flash.hxx>
 #include "usb/descriptors.hxx"
@@ -182,4 +182,4 @@ namespace usb::descriptors
 	extern const std::array<flash_t<usbMultiPartTable_t>, stringCount> strings;
 } // namespace usb::descriptors
 
-#endif /*USB_PLATFORMS_ATXMEGA256A3U_TYPES___HXX*/
+#endif /*USB_PLATFORMS_ATXMEGA256A3U_TYPES_HXX*/
