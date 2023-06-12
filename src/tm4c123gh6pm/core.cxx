@@ -139,7 +139,7 @@ namespace usb::core
 		// Really enable the double-buffers as apparently this isn't done just by the above.
 		usbCtrl.txPacketDoubleBuffEnable |= vals::usb::txPacketDoubleBuffEnableEP1;
 		usbCtrl.rxPacketDoubleBuffEnable |= vals::usb::rxPacketDoubleBuffEnableEP1;
-		resetEPs(what);
+		resetEPs(epReset_t::all);
 
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0;
