@@ -30,7 +30,7 @@ namespace usb::core
 		}
 
 		volatile uint16_t *epBufferPtr(const uint32_t address)
-			{ return reinterpret_cast<volatile uint16_t *>(stm32::packetBufferBase + address); }
+			{ return reinterpret_cast<volatile uint16_t *>(stm32::packetBufferBase + (address << 1U)); }
 	} // namespace internal
 
 	void init() noexcept
@@ -167,13 +167,13 @@ namespace usb::core
 			{
 				epCtrl &= vals::usb::epCtrlTXMask;
 				epCtrl |= vals::usb::epCtrlTXNack;
-				epBufferCtrl.txAddress = sizeof(stm32::usbEPTable_t) + bufferAddress;
+				epBufferCtrl.txAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 			}
 			else
 			{
 				epCtrl &= vals::usb::epCtrlRXMask;
 				epCtrl |= vals::usb::epCtrlRXNack;
-				epBufferCtrl.rxAddress = sizeof(stm32::usbEPTable_t) + bufferAddress;
+				epBufferCtrl.rxAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 				epBufferCtrl.rxCount = vals::usb::rxBufferSize(bufferLength);
 			}
 
