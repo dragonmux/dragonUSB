@@ -361,6 +361,26 @@ namespace usb::core
 		return !epStatus.transferCount;
 	}
 
+	bool readEPReady(const uint8_t endpoint) noexcept
+	{
+		// Once a read completes, correct transfer gets set.
+		return usbCtrl.epCtrlStat[endpoint] & vals::usb::epStatusRxCorrectXfer;
+	}
+
+	bool writeEPBusy(const uint8_t endpoint) noexcept
+	{
+		// While the endpoint is marked "valid", the packet is yet to be transmitted.
+		// Hardware automatically sets the endpoint to NACK and sets epStatusTxCorrectXfer on completion.
+		return (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlTXMask) == vals::usb::epCtrlTXValid;
+	}
+
+	void stallEP(const uint8_t endpoint)
+	{
+		// Mark the receive side of the endpoint stalled
+		usbCtrl.epCtrlStat[endpoint] = (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlRXMask) |
+			vals::usb::epCtrlRXStall;
+	}
+
 	void processEndpoint(const uint8_t endpoint) noexcept
 	{
 		// If we're EP0, go through the control endpoint machinary
