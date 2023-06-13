@@ -374,7 +374,7 @@ namespace usb::core
 		return (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlTXMask) == vals::usb::epCtrlTXValid;
 	}
 
-	void stallEP(const uint8_t endpoint)
+	void stallEP(const uint8_t endpoint) noexcept
 	{
 		// Mark the receive side of the endpoint stalled
 		usbCtrl.epCtrlStat[endpoint] = (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlRXMask) |
