@@ -114,7 +114,7 @@ namespace usb::core
 		usbCtrl.epCtrlStat[0] = (usbCtrl.epCtrlStat[0] & vals::usb::epCtrlRXMask) | vals::usb::epCtrlRXValid;
 
 		// Once we get done, idle the peripheral
-		usbCtrl.address = 0;
+		usbCtrl.address = 0 | vals::usb::addressUSBEnable;
 		usbState = deviceState_t::attached;
 		usbCtrl.ctrl |= vals::usb::controlSOFItrEn | vals::usb::controlCorrectXferItrEn | vals::usb::controlWakeupItrEn;
 		usb::device::activeConfig = 0;
