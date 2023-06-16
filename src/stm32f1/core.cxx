@@ -392,12 +392,18 @@ namespace usb::core
 			// Find the handler for this endpoint
 			const auto &handler
 			{
-				[](const size_t config, const size_t index)
+				[](const size_t config, const size_t index) -> handler_t
 				{
+#if USB_ENDPOINTS > 0
 					if (usbPacket.dir() == endpointDir_t::controllerIn)
 						return inHandlers[config][index];
 					else
 						return outHandlers[config][index];
+#else
+					static_cast<void>(config);
+					static_cast<void>(index);
+					return {};
+#endif
 				}(usb::device::activeConfig - 1U, endpoint - 1U)
 			};
 			// If there is a callback registered, call it
