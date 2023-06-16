@@ -111,7 +111,7 @@ namespace usb::core
 		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerIn, 0),
 			usbEndpointType_t::control, 0, epBufferSize);
 		// Enable the endpoint for receiving SETUP packets
-		usbCtrl.epCtrlStat[0] = (usbCtrl.epCtrlStat[0] & vals::usb::epCtrlRXMask) | vals::usb::epCtrlRXValid;
+		vals::usb::epCtrlStatusUpdateRX(0, vals::usb::epCtrlRXValid);
 
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0 | vals::usb::addressUSBEnable;
@@ -128,6 +128,8 @@ namespace usb::core
 				continue;
 			usbCtrl.epCtrlStat[endpoint] &= vals::usb::epClearMask;
 			usbCtrl.epCtrlStat[endpoint] |= vals::usb::epAddress(endpoint);
+			vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXDisabled);
+			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXDisabled);
 		}
 		usb::core::common::resetEPs(what);
 	}
@@ -165,14 +167,12 @@ namespace usb::core
 
 			if (direction == endpointDir_t::controllerIn)
 			{
-				epCtrl &= vals::usb::epCtrlTXMask;
-				epCtrl |= vals::usb::epCtrlTXNack;
+				vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXNack);
 				epBufferCtrl.txAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 			}
 			else
 			{
-				epCtrl &= vals::usb::epCtrlRXMask;
-				epCtrl |= vals::usb::epCtrlRXNack;
+				vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
 				epBufferCtrl.rxAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 				epBufferCtrl.rxCount = vals::usb::rxBufferSize(bufferLength);
 			}
@@ -257,6 +257,8 @@ namespace usb::core
 		epStatus.transferCount -= readCount;
 		// Grab the data associated with this transfer
 		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress), epStatus.memBuffer, readCount);
+		// Tell the controller we're done with the data
+		vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
 		return !epStatus.transferCount;
 	}
 
@@ -356,15 +358,14 @@ namespace usb::core
 
 		// Mark the buffer as ready to send
 		epBufferCtrl.txCount = sendCount;
-		usbCtrl.epCtrlStat[endpoint] = (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlTXMask) |
-			vals::usb::epCtrlTXValid;
+		vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXValid);
 		return !epStatus.transferCount;
 	}
 
 	bool readEPReady(const uint8_t endpoint) noexcept
 	{
 		// Once a read completes, correct transfer gets set.
-		return usbCtrl.epCtrlStat[endpoint] & vals::usb::epStatusRxCorrectXfer;
+		return usbCtrl.epCtrlStat[endpoint] & vals::usb::epStatusRXCorrectXfer;
 	}
 
 	bool writeEPBusy(const uint8_t endpoint) noexcept
@@ -377,8 +378,7 @@ namespace usb::core
 	void stallEP(const uint8_t endpoint) noexcept
 	{
 		// Mark the receive side of the endpoint stalled
-		usbCtrl.epCtrlStat[endpoint] = (usbCtrl.epCtrlStat[endpoint] & vals::usb::epCtrlRXMask) |
-			vals::usb::epCtrlRXStall;
+		vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXStall);
 	}
 
 	void processEndpoint(const uint8_t endpoint) noexcept
@@ -417,18 +417,16 @@ namespace usb::core
 				continue;
 			usbPacket.endpoint(uint8_t(endpoint));
 			// If there's data waiting to be read
-			if (epCtrlStat & vals::usb::epStatusRxCorrectXfer)
+			if (epCtrlStat & vals::usb::epStatusRXCorrectXfer)
 			{
 				usbPacket.dir(endpointDir_t::controllerOut);
 				processEndpoint(uint8_t(endpoint));
-				epCtrlStat &= ~vals::usb::epStatusRxCorrectXfer;
 			}
 			// If we've successfully send data
-			if (epCtrlStat & vals::usb::epStatusTxCorrectXfer)
+			if (epCtrlStat & vals::usb::epStatusTXCorrectXfer)
 			{
 				usbPacket.dir(endpointDir_t::controllerIn);
 				processEndpoint(uint8_t(endpoint));
-				epCtrlStat &= ~vals::usb::epStatusTxCorrectXfer;
 			}
 		}
 	}
