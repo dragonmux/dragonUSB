@@ -167,12 +167,14 @@ namespace usb::core
 
 			if (direction == endpointDir_t::controllerIn)
 			{
-				vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXNack);
+				vals::usb::epCtrlStatusUpdateTX(endpointNumber, vals::usb::epCtrlTXNack);
+				vals::usb::epCtrlSetDataToggleTX(endpointNumber, false);
 				epBufferCtrl.txAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 			}
 			else
 			{
-				vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
+				vals::usb::epCtrlStatusUpdateRX(endpointNumber, vals::usb::epCtrlRXNack);
+				vals::usb::epCtrlSetDataToggleRX(endpointNumber, false);
 				epBufferCtrl.rxAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 				epBufferCtrl.rxCount = vals::usb::rxBufferSize(bufferLength);
 			}
