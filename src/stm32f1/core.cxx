@@ -264,6 +264,8 @@ namespace usb::core
 			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXValid);
 		else
 			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
+		if (endpoint == 0U)
+			vals::usb::epCtrlSetDataToggleTX(0U, usbCtrl.epCtrlStat[0U] & vals::usb::epRXDataToggle);
 		return !epStatus.transferCount;
 	}
 
@@ -364,6 +366,8 @@ namespace usb::core
 		// Mark the buffer as ready to send
 		epBufferCtrl.txCount = sendCount;
 		vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXValid);
+		if (endpoint == 0U)
+			vals::usb::epCtrlSetDataToggleRX(0U, usbCtrl.epCtrlStat[0U] & vals::usb::epTXDataToggle);
 		return !epStatus.transferCount;
 	}
 
