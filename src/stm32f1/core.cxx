@@ -260,7 +260,10 @@ namespace usb::core
 		// Grab the data associated with this transfer
 		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress), epStatus.memBuffer, readCount);
 		// Tell the controller we're done with the data
-		vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
+		if (epStatus.transferCount || endpoint == 0U)
+			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXValid);
+		else
+			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
 		return !epStatus.transferCount;
 	}
 
