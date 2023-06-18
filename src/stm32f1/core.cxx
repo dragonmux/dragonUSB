@@ -110,8 +110,6 @@ namespace usb::core
 			usbEndpointType_t::control, 0, epBufferSize);
 		internal::setupEndpoint(vals::usb::endpoint(vals::usb::endpointDir_t::controllerIn, 0),
 			usbEndpointType_t::control, 0, epBufferSize);
-		// Enable the endpoint for receiving SETUP packets
-		vals::usb::epCtrlStatusUpdateRX(0, vals::usb::epCtrlRXValid);
 
 		// Once we get done, idle the peripheral
 		usbCtrl.address = 0 | vals::usb::addressUSBEnable;
@@ -141,45 +139,42 @@ namespace usb::core
 		{
 			const auto direction{static_cast<endpointDir_t>(endpoint & ~vals::usb::endpointDirMask)};
 			const auto endpointNumber{uint8_t(endpoint & vals::usb::endpointDirMask)};
-
-			auto epCtrl{usbCtrl.epCtrlStat[endpointNumber]};
 			auto &epBufferCtrl{internal::epBufferCtrlFor(endpointNumber)};
 
 			// NB: we assume both IN and OUT endpoints have a consistent type here as there are only 8 endpoint
 			// registers and the types are shared between the two halves
-			epCtrl &= vals::usb::epCtrlTypeMask;
-			epCtrl |= [&]()
-			{
-				switch (type)
+			vals::usb::epCtrlStatusSetType(endpointNumber,
+				[&]()
 				{
-					case usbEndpointType_t::control:
-						return vals::usb::epCtrlTypeControl;
-					case usbEndpointType_t::bulk:
-						return vals::usb::epCtrlTypeBulk;
-					case usbEndpointType_t::interrupt:
-						return vals::usb::epCtrlTypeInterrupt;
-					case usbEndpointType_t::isochronous:
-						return vals::usb::epCtrlTypeIsochronous;
-				}
-				// This should never bit hit.. but.. just in case.
-				return vals::usb::epCtrlTypeBulk;
-			}();
+					switch (type)
+					{
+						case usbEndpointType_t::control:
+							return vals::usb::epCtrlTypeControl;
+						case usbEndpointType_t::bulk:
+							return vals::usb::epCtrlTypeBulk;
+						case usbEndpointType_t::interrupt:
+							return vals::usb::epCtrlTypeInterrupt;
+						case usbEndpointType_t::isochronous:
+							return vals::usb::epCtrlTypeIsochronous;
+					}
+					// This should never bit hit.. but.. just in case.
+					return vals::usb::epCtrlTypeBulk;
+				}()
+			);
 
 			if (direction == endpointDir_t::controllerIn)
 			{
-				vals::usb::epCtrlStatusUpdateTX(endpointNumber, vals::usb::epCtrlTXNack);
-				vals::usb::epCtrlSetDataToggleTX(endpointNumber, false);
 				epBufferCtrl.txAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
+				vals::usb::epCtrlSetDataToggleTX(endpointNumber, false);
+				vals::usb::epCtrlStatusUpdateTX(endpointNumber, vals::usb::epCtrlTXNack);
 			}
 			else
 			{
-				vals::usb::epCtrlStatusUpdateRX(endpointNumber, vals::usb::epCtrlRXNack);
-				vals::usb::epCtrlSetDataToggleRX(endpointNumber, false);
 				epBufferCtrl.rxAddress = (sizeof(stm32::usbEPTable_t) >> 1U) + bufferAddress;
 				epBufferCtrl.rxCount = vals::usb::rxBufferSize(bufferLength);
+				vals::usb::epCtrlSetDataToggleRX(endpointNumber, false);
+				vals::usb::epCtrlStatusUpdateRX(endpointNumber, vals::usb::epCtrlRXValid);
 			}
-
-			usbCtrl.epCtrlStat[endpointNumber] = epCtrl;
 		}
 	} // namespace internal
 
