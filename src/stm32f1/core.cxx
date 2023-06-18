@@ -381,8 +381,8 @@ namespace usb::core
 
 	void stallEP(const uint8_t endpoint) noexcept
 	{
-		// Mark the receive side of the endpoint stalled
-		vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXStall);
+		// Mark the send side of the endpoint stalled
+		vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXStall);
 	}
 
 	void processEndpoint(const uint8_t endpoint) noexcept
