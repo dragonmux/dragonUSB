@@ -69,7 +69,7 @@ namespace usb::core
 		usbCtrl.intStatus &= vals::usb::itrStatusClearMask;
 
 		// Ensure the device address is 0
-		usbCtrl.address = 0 | vals::usb::addressUSBEnable;
+		address(0);
 		// Ensure we're in the unconfigured configuration
 		usb::device::activeConfig = 0;
 		// Ensure we can respond to reset interrupts
@@ -95,7 +95,7 @@ namespace usb::core
 	void address(const uint8_t value) noexcept
 	{
 		usbCtrl.address = (usbCtrl.address & vals::usb::addressClrMask) |
-			(value & vals::usb::addressMask);
+			(value & vals::usb::addressMask) | vals::usb::addressUSBEnable;
 	}
 
 	uint8_t address() noexcept { return usbCtrl.address & vals::usb::addressMask; }
