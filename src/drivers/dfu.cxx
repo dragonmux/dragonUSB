@@ -87,7 +87,7 @@ namespace usb::dfu
 			setupCallback = downloadStepDone;
 		}
 		else
-			config.state = dfuState_t::dfuIdle;
+			config.state = dfuState_t::manifestSync;
 		return {response_t::zeroLength, nullptr, 0};
 	}
 
@@ -124,6 +124,10 @@ namespace usb::dfu
 					return {response_t::stall, nullptr, 0};
 				if (config.state == dfuState_t::downloadSync)
 					config.state = dfuState_t::downloadIdle;
+				else if (config.state == dfuState_t::manifestSync)
+					config.state = dfuState_t::manifest;
+				else if (config.state == dfuState_t::manifest)
+					config.state = dfuState_t::dfuIdle;
 				return {response_t::data, &config, sizeof(config)};
 			case types::request_t::clearStatus:
 				if (packet.requestType.dir() == endpointDir_t::controllerIn)
