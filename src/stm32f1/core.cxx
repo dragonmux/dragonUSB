@@ -255,12 +255,12 @@ namespace usb::core
 		// Grab the data associated with this transfer
 		epStatus.memBuffer = recvData(internal::epBufferPtr(epBufferCtrl.rxAddress), epStatus.memBuffer, readCount);
 		// Tell the controller we're done with the data
+		if (endpoint == 0U && usbCtrlState == ctrlState_t::statusRX)
+			vals::usb::epCtrlSetDataToggleRX(0U, true);
 		if (epStatus.transferCount || endpoint == 0U)
 			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXValid);
 		else
 			vals::usb::epCtrlStatusUpdateRX(endpoint, vals::usb::epCtrlRXNack);
-		if (endpoint == 0U)
-			vals::usb::epCtrlSetDataToggleTX(0U, usbCtrl.epCtrlStat[0U] & vals::usb::epRXDataToggle);
 		return !epStatus.transferCount;
 	}
 
@@ -360,9 +360,9 @@ namespace usb::core
 
 		// Mark the buffer as ready to send
 		epBufferCtrl.txCount = sendCount;
+		if (endpoint == 0U && usbCtrlState == ctrlState_t::statusTX)
+			vals::usb::epCtrlSetDataToggleTX(0U, true);
 		vals::usb::epCtrlStatusUpdateTX(endpoint, vals::usb::epCtrlTXValid);
-		if (endpoint == 0U)
-			vals::usb::epCtrlSetDataToggleRX(0U, usbCtrl.epCtrlStat[0U] & vals::usb::epTXDataToggle);
 		return !epStatus.transferCount;
 	}
 
