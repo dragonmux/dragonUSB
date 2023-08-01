@@ -233,9 +233,9 @@ namespace usb::core
 	}
 
 	/*!
-	* @returns true when the all the data to be read has been retreived,
-	* false if there is more left to fetch.
-	*/
+	 * @returns true when the all the data to be read has been retreived,
+	 * false if there is more left to fetch.
+	 */
 	bool readEP(const uint8_t endpoint) noexcept
 	{
 		auto &epStatus{epStatusControllerOut[endpoint]};
