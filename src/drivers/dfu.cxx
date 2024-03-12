@@ -74,8 +74,6 @@ namespace usb::dfu
 				return {response_t::stall, nullptr, 0};
 
 			flashState.op = flashOp_t::erase;
-			erase(flashState.eraseAddr);
-			flashState.eraseAddr += flashEraseSize;
 			flashState.offset = 0;
 			flashState.byteCount = packet.length;
 
