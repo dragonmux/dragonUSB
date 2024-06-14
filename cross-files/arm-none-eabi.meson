@@ -1,18 +1,21 @@
 [constants]
+gcc_path = ''
+gcc_prefix = 'arm-none-eabi-'
+gcc_base = gcc_path / gcc_prefix
 common_flags = ['-mthumb', '-mcpu=cortex-m4', '-march=armv7e-m+fp', '-mfpu=fpv4-sp-d16', '-mfloat-abi=softfp']
 compile_flags = ['-ffunction-sections', '-fdata-sections']
 link_flags = ['-nostartfiles', '--static', '-Wl,--gc-sections']
 
 [binaries]
-c = exec_prefix / 'arm-none-eabi-gcc'
-cpp = exec_prefix / 'arm-none-eabi-g++'
-ar = [exec_prefix / 'arm-none-eabi-ar', '--plugin', plugin_dir / 'liblto_plugin.so']
-as = exec_prefix / 'arm-none-eabi-as'
-strip = exec_prefix / 'arm-none-eabi-strip'
-objcopy = exec_prefix / 'arm-none-eabi-objcopy'
-objdump = exec_prefix / 'arm-none-eabi-objdump'
-size = exec_prefix / 'arm-none-eabi-size'
-gdb = exec_prefix / 'arm-none-eabi-gdb'
+c = gcc_base + 'gcc'
+cpp = gcc_base + 'g++'
+ar = gcc_base + 'ar'
+as = gcc_base + 'as'
+strip = gcc_base + 'strip'
+objcopy = gcc_base + 'objcopy'
+objdump = gcc_base + 'objdump'
+size = gcc_base + 'size'
+gdb = gcc_base + 'gdb'
 cmake = 'false'
 
 [properties]
@@ -41,7 +44,7 @@ cpp_eh = 'none'
 cpp_rtti = false
 
 [host_machine]
-system = 'TM4C123GH6PM'
+system = 'bare-metal'
 cpu_family = 'arm'
-cpu = 'cortex-m4f'
+cpu = 'cortex-m'
 endian = 'little'
