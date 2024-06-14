@@ -8,6 +8,9 @@
 #elif defined(STM32F1)
 #include <stm32f1/platform.hxx>
 #include <stm32f1/constants.hxx>
+#elif defined(STM32H7)
+#include <stm32h7/platform.hxx>
+#include <stm32h7/constants.hxx>
 #elif defined(ATXMEGA256A3U)
 #include <avr/io.h>
 #include "usb/platforms/atxmega256a3u/constants.hxx"

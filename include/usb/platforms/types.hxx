@@ -22,7 +22,7 @@ namespace usb::descriptors
 	};
 } // namespace usb::descriptors
 
-#if defined(TM4C123GH6PM) || defined(STM32F1)
+#if defined(TM4C123GH6PM) || defined(STM32F1) || defined(STM32H7)
 #include "usb/platforms/aarch32/types.hxx"
 #elif defined(ATXMEGA256A3U)
 #include "usb/platforms/atxmega256a3u/types.hxx"

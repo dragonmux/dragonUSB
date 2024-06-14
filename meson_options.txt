@@ -5,6 +5,7 @@ option(
 		'unknown',
 		'tm4c123gh6pm',
 		'stm32f1',
+		'stm32h7',
 		'atxmega256a3u'
 	]
 )
