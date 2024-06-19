@@ -484,4 +484,4 @@ namespace usb::core
 		if (status & vals::usb::itrStatusCorrectXfer)
 			processEndpoints();
 	}
-}
+} // namespace usb::core
