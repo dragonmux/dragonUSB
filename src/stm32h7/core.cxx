@@ -24,10 +24,15 @@ namespace usb::core
 			continue;
 
 		// Ensure that CRS-based auto-trim is enabled
+		rcc.apb1Enable[1U] |= vals::rcc::apb1Enable2CRS;
 
 		// Switch the clocks for the USB controller to the HSI48
+		rcc.domain2ClockConfig2 = (rcc.domain2ClockConfig2 & ~vals::rcc::domain2ClockConfig2USBMask) |
+			vals::rcc::domain2ClockConfig2USBHSI48;
 
 		// Enable the clocks for the USB and GPIOA peripherals
+		rcc.ahb4Enable |= vals::rcc::ahb4EnableGPIOA;
+		rcc.ahb1Enable |= vals::rcc::ahb1EnableUSB1HS;
 
 		// Set up the port pins used by the USB controller so they're
 		// in the right modes with the USB controller connected through.
