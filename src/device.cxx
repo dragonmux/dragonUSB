@@ -198,6 +198,8 @@ namespace usb::device
 				// Bad request? Stall.
 				return {response_t::stall, nullptr, 0};
 			case request_t::syncFrame: // Only used for isochronous stuff anyway.
+			case request_t::setFeature: // No special features are supported by this framework
+			case request_t::clearFeature: // No special features are supported by this framework
 				return {response_t::stall, nullptr, 0};
 		}
 
