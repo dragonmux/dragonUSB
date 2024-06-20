@@ -23,8 +23,12 @@ namespace usb::core
 		while (!(rcc.ctrl & vals::rcc::ctrlHSI48Ready))
 			continue;
 
-		// Ensure that CRS-based auto-trim is enabled
+		// Ensure that CRS-based auto-trim is enabled and uses USB SOF packets as the trim source
 		rcc.apb1Enable[1U] |= vals::rcc::apb1Enable2CRS;
+		crs.config &= ~vals::crs::configSyncSourceMask;
+		crs.config |= vals::crs::configSyncSourceUSBSOF;
+		crs.ctrl |= vals::crs::ctrlAutoTrimEnable;
+		crs.ctrl |= vals::crs::ctrlErrorCounterEnable;
 
 		// Switch the clocks for the USB controller to the HSI48
 		rcc.domain2ClockConfig2 = (rcc.domain2ClockConfig2 & ~vals::rcc::domain2ClockConfig2USBMask) |
