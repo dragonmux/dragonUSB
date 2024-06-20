@@ -40,7 +40,16 @@ namespace usb::core
 
 		// Set up the port pins used by the USB controller so they're
 		// in the right modes with the USB controller connected through.
+		vals::gpio::config<vals::gpio_t::pin11>(gpioA, vals::gpio::mode_t::alternateFunction,
+			vals::gpio::resistor_t::none, vals::gpio::outputSpeed_t::speed100MHz);
+		vals::gpio::config<vals::gpio_t::pin12>(gpioA, vals::gpio::mode_t::alternateFunction,
+			vals::gpio::resistor_t::none, vals::gpio::outputSpeed_t::speed100MHz);
+		vals::gpio::config<vals::gpio_t::pin9>(gpioA, vals::gpio::mode_t::input, vals::gpio::resistor_t::none);
+		// NB: This is not documented, but AF10 is the USB controller for these pins.
+		vals::gpio::altFunction<vals::gpio_t::pin11>(gpioA, 10);
+		vals::gpio::altFunction<vals::gpio_t::pin12>(gpioA, 10);
 
 		// Configure the DWC2 for use in the stack and begining enumeration
+		rcc.ahb1Enable |= vals::rcc::ahb1EnableUSB1HS;
 	}
 } // namespace usb::core
