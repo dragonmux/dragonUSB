@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "usb/platform.hxx"
-//#include "usb/platforms/dwc2/core.hxx"
+#include "usb/platforms/stm32h7/core.hxx"
 
 /*!
  * USB pinout:
