@@ -51,5 +51,20 @@ namespace usb::core
 
 		// Configure the DWC2 for use in the stack and begining enumeration
 		rcc.ahb1Enable |= vals::rcc::ahb1EnableUSB1HS;
+
+		// Wait for AHB idle
+		while (!(usb1HS.globalResetCtrl & dwc2::globalResetCtrlAHBIdle))
+			continue;
+		// Do a core soft reset
+		usb1HS.globalResetCtrl |= dwc2::globalResetCtrlCore;
+		while (usb1HS.globalResetCtrl & dwc2::globalResetCtrlCore)
+			continue;
+
+		// Restart the PHY clock
+
+		usb1HS.globalRxFIFOSize = dwc2::rxFIFOSize;
+
+		// Unmask interrupts for TX and RX
+		usb1HS.globalAHBConfig = dwc2::globalAHBConfigGlobalIntUnmask;
 	}
 } // namespace usb::core
