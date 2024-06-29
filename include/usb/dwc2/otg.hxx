@@ -56,8 +56,13 @@ namespace usb::dwc2
 		volatile uint32_t globalRxStatusRead;
 		volatile uint32_t globalRxStatusPop;
 		volatile uint32_t globalRxFIFOSize;
-		volatile uint32_t globalNonPeriodicTxFIFOSize;
-		volatile uint32_t globalNonPeriodicTxStatus;
+		// This serves as both the Host Non-Periodic Tx FIFO size, and the Device EP0 Tx FIFO size
+		union
+		{
+			volatile uint32_t hostNonPeriodicTxFIFO;
+			volatile uint32_t deviceEP0TxFIFO;
+		};
+		volatile uint32_t hostNonPeriodicTxStatus;
 		std::array<const volatile uint32_t, 2> reserved1;
 		volatile uint32_t globalCoreConfig;
 		volatile uint32_t coreID;
@@ -168,6 +173,34 @@ namespace usb::dwc2
 	constexpr inline uint32_t globalAHBConfigBurstLength(const ahbBurstLength_t burstLength) noexcept
 		{ return static_cast<uint32_t>(static_cast<uint8_t>(burstLength) & 0xfU) << 1U; }
 
+	// Global USB configuration register constants
+	constexpr static uint32_t globalUSBConfigFSTimeoutCalMask{0x7U << 0U};
+	constexpr static uint32_t globalUSBConfigPHYSelUSB2_0{0U << 6U};
+	constexpr static uint32_t globalUSBConfigPHYSelUSB1_1{1U << 6U};
+	constexpr static uint32_t globalUSBConfigSRPCapable{1U << 8U};
+	constexpr static uint32_t globalUSBConfigHNPCapable{1U << 9U};
+	constexpr static uint32_t globalUSBConfigTurnaroundTimeMask{0xfU << 10U};
+	constexpr static uint32_t globalUSBConfigPHYLowPower{1U << 15U};
+	constexpr static uint32_t globalUSBConfigUPLIfaceNormal{0U << 17U};
+	constexpr static uint32_t globalUSBConfigUPLIfaceSerial{1U << 17U};
+	constexpr static uint32_t globalUSBConfigUPLIAutoResume{1U << 18U};
+	constexpr static uint32_t globalUSBConfigULPIClockSuspend{1U << 19U};
+	constexpr static uint32_t globalUSBConfigULPIExtVBusDrive{1U << 20U};
+	constexpr static uint32_t globalUSBConfigULPIExtVBusIndicator{1U << 21U};
+	constexpr static uint32_t globalUSBConfigDataPulseTxValid{0U << 22U};
+	constexpr static uint32_t globalUSBConfigDataPulseTermSel{1U << 22U};
+	constexpr static uint32_t globalUSBConfigPCCI{1U << 23U};
+	constexpr static uint32_t globalUSBConfigPTCI{1U << 24U};
+	constexpr static uint32_t globalUSBConfigUPLIProtectEnable{0U << 25U};
+	constexpr static uint32_t globalUSBConfigUPLIProtectDisable{1U << 25U};
+	constexpr static uint32_t globalUSBConfigForceHostMode{1U << 29U};
+	constexpr static uint32_t globalUSBConfigForceDeviceMode{1U << 30U};
+
+	constexpr inline uint32_t globalUSBConfigFSTimeoutCal(const uint8_t timeout) noexcept
+		{ return static_cast<uint32_t>(timeout & 0x7U); }
+	constexpr inline uint32_t globalUSBConfigTurnaroundTime(const uint8_t timeout) noexcept
+		{ return static_cast<uint32_t>(timeout & 0xfU) << 10U; }
+
 	// Global reset register constants
 	constexpr static uint32_t globalResetCtrlCore{1U << 0U};
 	constexpr static uint32_t globalResetCtrlPartial{1U << 1U};
@@ -178,6 +211,90 @@ namespace usb::dwc2
 	constexpr static size_t globalResetCtrlTxFIFONumberShift{6U};
 	constexpr static uint32_t globalResetCtrlDMAReqOngoing{1U << 30U};
 	constexpr static uint32_t globalResetCtrlAHBIdle{1U << 31U};
+
+	// Global interrupt status and mask regsiters constants
+	constexpr static uint32_t globalItrStatusCurrentModeMask{1U << 0U};
+	constexpr static uint32_t globalItrStatusCurrentModeDevice{0U << 0U};
+	constexpr static uint32_t globalItrStatusCurrentModeHost{1U << 0U};
+	constexpr static uint32_t globalItrModeMismatch{1U << 1U};
+	constexpr static uint32_t globalItrOTG{1U << 2U};
+	constexpr static uint32_t globalItrSOF{1U << 3U};
+	constexpr static uint32_t globalItrRxFIFONonEmpty{1U << 4U};
+	constexpr static uint32_t globalItrNonPeriodicTxFIFOEmpty{1U << 5U};
+	constexpr static uint32_t globalItrGlobalInNonPeriodicNAKEffective{1U << 6U};
+	constexpr static uint32_t globalItrGlobalOutNAKEffective{1U << 7U};
+	constexpr static uint32_t globalItrEarlySuspend{1U << 10U};
+	constexpr static uint32_t globalItrUSBSuspend{1U << 11U};
+	constexpr static uint32_t globalItrUSBReset{1U << 12U};
+	constexpr static uint32_t globalItrEnumDone{1U << 13U};
+	constexpr static uint32_t globalItrIsochronousOutDropped{1U << 14U};
+	constexpr static uint32_t globalItrEoPFrame{1U << 15U};
+	constexpr static uint32_t globalItrInEndpoint{1U << 18U};
+	constexpr static uint32_t globalItrOutEndpoint{1U << 19U};
+	constexpr static uint32_t globalItrIsochronousInXferIncomplete{1U << 20U};
+	constexpr static uint32_t globalItrPeriodicXferIncomplete{1U << 21U};
+	constexpr static uint32_t globalItrDataFetchSuspended{1U << 22U};
+	constexpr static uint32_t globalItrResetDetected{1U << 23U};
+	constexpr static uint32_t globalItrHostPort{1U << 24U};
+	constexpr static uint32_t globalItrHostChannels{1U << 25U};
+	constexpr static uint32_t globalItrPeriodicTxFIFOEmpty{1U << 26U};
+	constexpr static uint32_t globalItrLPM{1U << 27U};
+	constexpr static uint32_t globalItrConnIDStatusChange{1U << 28U};
+	constexpr static uint32_t globalItrDisconnected{1U << 29U};
+	constexpr static uint32_t globalItrSessionReq{1U << 30U};
+	constexpr static uint32_t globalItrWakeupDetected{1U << 31U};
+
+	// Global receive status debug read (and pop) register constants (Device mode)
+	constexpr static uint32_t globalRxStatusEPNumberMask{0xfU << 0U};
+	constexpr static uint32_t globalRxStatusByteCountMask{0x03ffU << 4U};
+	constexpr static size_t globalRxStatusByteCountShift{4U};
+	constexpr static uint32_t globalRxStatusPIDMask{0x3U << 15U};
+	constexpr static uint32_t globalRxStatusPIDData0{0x0U << 15U};
+	constexpr static uint32_t globalRxStatusPIDData1{0x1U << 15U};
+	constexpr static uint32_t globalRxStatusPIDData2{0x2U << 15U};
+	constexpr static uint32_t globalRxStatusPIDMData{0x3U << 15U};
+	constexpr static uint32_t globalRxStatusPacketStatusMask{0xfU << 17U};
+	constexpr static uint32_t globalRxStatusPacketStatusGlobalOutNAK{0x1U << 17U};
+	constexpr static uint32_t globalRxStatusPacketStatusOutDataReceived{0x2U << 17U};
+	constexpr static uint32_t globalRxStatusPacketStatusOutXferComplete{0x3U << 17U};
+	constexpr static uint32_t globalRxStatusPacketStatusSetupTransComplete{0x4U << 17U};
+	constexpr static uint32_t globalRxStatusPacketStatusSetupDataReceived{0x6U << 17U};
+	constexpr static uint32_t globalRxStatusFrameNumberMask{0xfU << 21U};
+	constexpr static size_t globalRxStatusFrameNumberShift{21U};
+	constexpr static uint32_t globalRxStatusStatusPhaseStart{1U << 27U};
+
+	// Global receive FIFO size register constants
+	constexpr static uint32_t globalRxFIFOSizeMask{0x0000ffffU};
+
+	// Host non-periodic / Device EP0 transmit FIFO size register constants
+	constexpr static uint32_t hostNonPeriodicTxFIFOStartAddrMask{0x0000ffffU};
+	constexpr static uint32_t hostNonPeriodicTxFIFODepthMask{0xffff0000U};
+	constexpr static size_t hostNonPeriodicTxFIFODepthShift{16U};
+	constexpr static uint32_t deviceEP0TxFIFOStartAddrMask{0x0000ffffU};
+	constexpr static uint32_t deviceEP0TxFIFODepthMask{0xffff0000U};
+	constexpr static size_t deviceEP0TxFIFODepthShift{16U};
+
+	// Host non-periodic transmit FIFO status register constants
+	constexpr static uint32_t hostNonPeriodicTxStatusFIFOAvailableMask{0x0000ffffU};
+	constexpr static uint32_t hostNonPeriodicTxStatusQueueAvailableMask{0x00ff0000U};
+	constexpr static size_t hostNonPeriodicTxStatusQueueAvailableShift{16U};
+	constexpr static uint32_t hostNonPeriodicTxStatusTopReqTypeMask{0x7f000000U};
+	constexpr static size_t hostNonPeriodicTxStatusTopReqTypeShift{24U};
+
+	// Global general core configuration register constants
+	constexpr static uint32_t globalCoreConfigDataDetectEnable{1U << 0U};
+	constexpr static uint32_t globalCoreConfigPrimaryDetectEnable{1U << 1U};
+	constexpr static uint32_t globalCoreConfigSecondaryDetectStatus{1U << 2U};
+	constexpr static uint32_t globalCoreConfigPullDetectMask{1U << 3U};
+	constexpr static uint32_t globalCoreConfigPullDetectNormal{0U << 3U};
+	constexpr static uint32_t globalCoreConfigPullDetectPS2{1U << 3U};
+	constexpr static uint32_t globalCoreConfigIntPHYDisable{0U << 16U};
+	constexpr static uint32_t globalCoreConfigIntPHYEnable{1U << 16U};
+	constexpr static uint32_t globalCoreConfigBatChargeDetectEnable{1U << 17U};
+	constexpr static uint32_t globalCoreConfigDataDetectEnable{1U << 18U};
+	constexpr static uint32_t globalCoreConfigPrimaryDetectEnable{1U << 19U};
+	constexpr static uint32_t globalCoreConfigSecondaryDetectEnable{1U << 20U};
+	constexpr static uint32_t globalCoreConfigVBusDetectEnable{1U << 21U};
 } // namespace usb::dwc2
 
 #endif /*USB_DWC2_OTG_HXX*/
