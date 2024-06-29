@@ -51,6 +51,13 @@ namespace usb::core
 
 		// Configure the DWC2 for use in the stack and begining enumeration
 		rcc.ahb1Enable |= vals::rcc::ahb1EnableUSB1HS;
+		usb1HS.globalItrStatus = dwc2::globalItrModeMismatch;
+
+		usb1HS.globalUSBConfig |= dwc2::globalUSBConfigPHYSelUSB1_1;
+		// Enable VBus sensing in device mode, data connection detection, and power up the FS PHY
+		usb1HS.globalCoreConfig &= ~dwc2::globalCoreConfigPrimaryDetectEnable;
+		usb1HS.globalCoreConfig |= dwc2::globalCoreConfigVBusDetectEnable | dwc2::globalCoreConfigDataDetectEnable |
+			dwc2::globalCoreConfigIntPHYEnable;
 
 		// Wait for AHB idle
 		while (!(usb1HS.globalResetCtrl & dwc2::globalResetCtrlAHBIdle))
@@ -60,11 +67,18 @@ namespace usb::core
 		while (usb1HS.globalResetCtrl & dwc2::globalResetCtrlCore)
 			continue;
 
+		// Force peripheral only mode
+		usb1HS.globalUSBConfig |= dwc2::globalUSBConfigForceDeviceMode | dwc2::globalUSBConfigTurnaroundTime(15U);
+
+		// Full speed device
+
 		// Restart the PHY clock
 
 		usb1HS.globalRxFIFOSize = dwc2::rxFIFOSize;
-
 		// Unmask interrupts for TX and RX
 		usb1HS.globalAHBConfig = dwc2::globalAHBConfigGlobalIntUnmask;
+		usb1HS.globalItrMask = dwc2::globalItrSOF | dwc2::globalItrRxFIFONonEmpty | dwc2::globalItrUSBSuspend |
+			dwc2::globalItrUSBReset | dwc2::globalItrEnumDone | dwc2::globalItrInEndpoint |
+			dwc2::globalItrOutEndpoint | dwc2::globalItrDisconnected | dwc2::globalItrWakeupDetected;
 	}
 } // namespace usb::core
